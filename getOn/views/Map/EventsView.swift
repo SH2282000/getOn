@@ -22,7 +22,7 @@ struct EventsView: View {
 
             // 2. The Expanded View (Overlays when active)
             if calendarState.isExpanded {
-                SwipeCalendarView(calendarState: $calendarState, isExpanded: calendarState.isExpanded)
+                SwipeCalendarView(calendarState: $calendarState)
                     .zIndex(1)
                     .transition(.asymmetric(
                         insertion: .opacity.animation(.easeIn(duration: 0.2)),

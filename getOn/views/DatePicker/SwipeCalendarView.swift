@@ -13,7 +13,6 @@ struct SwipeCalendarView: View {
     @Binding var calendarState: CalendarViewState
     
     // Interaction State
-    @State var isExpanded: Bool
     @State private var activeMode: EditMode = .frequency
     @State private var dragOffset: CGFloat = 0
     @State private var lastDragValue: CGFloat = 0
@@ -48,7 +47,7 @@ struct SwipeCalendarView: View {
                         .opacity(0.8)
                         .padding()
                         .onTapGesture {
-                        withAnimation { isExpanded = false }
+                            withAnimation { calendarState.isExpanded = false }
                     }
                 }
                 
@@ -246,5 +245,5 @@ struct SwipeCalendarView: View {
 #Preview {
     @Previewable @State var calendarState: CalendarViewState = .init()
     
-    SwipeCalendarView(calendarState: .constant(calendarState), isExpanded: false)
+    SwipeCalendarView(calendarState: .constant(calendarState))
 }
