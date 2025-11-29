@@ -1,5 +1,5 @@
 //
-//  LiquidGlassMap.swift
+//  GlassMap.swift
 //  getOn
 //
 //  Created by Shannah on 29/11/2025.
@@ -7,30 +7,7 @@
 import SwiftUI
 import MapKit
 
-// MARK: - Models for Persistence
-// CLLocationCoordinate2D is not Codable by default, so we need a helper struct.
-struct CodableCoordinate: Codable, Equatable {
-    let latitude: Double
-    let longitude: Double
-    
-    init(_ coordinate: CLLocationCoordinate2D) {
-        self.latitude = coordinate.latitude
-        self.longitude = coordinate.longitude
-    }
-    
-    var toCoreLocation: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-    }
-}
-
-struct SavedMapShape: Codable, Identifiable {
-    var id = UUID()
-    var coordinates: [CodableCoordinate]
-}
-
-// MARK: - Main View
-struct LiquidGlassMap: View {
-    // MARK: - Map State
+struct GlassMap: View {
     @State private var position: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090),
@@ -38,13 +15,17 @@ struct LiquidGlassMap: View {
         )
     )
     
-    // MARK: - Drawing State
     @State private var isDrawingMode: Bool = false
     @State private var currentDrawingPath: [CLLocationCoordinate2D] = []
     @State private var savedShapes: [SavedMapShape] = []
     @State private var mapStyleSelection: Int = 0
     
-    // MARK: - Initialization
+    // Concrete Place and Time
+    @State private var placeName: String = "Cupertino, CA"
+    @State private var showSettings: Bool = false
+    @State private var cardColor: Color = .white
+    
+
     // Load saved shapes on init
     init() {
         if let data = try? Data(contentsOf: Self.shapesFileURL),
@@ -58,57 +39,40 @@ struct LiquidGlassMap: View {
             // 1. Map Reader enables coordinate conversion
             MapReader { proxy in
                 ZStack {
-                    // 2. The Map Layer
+                    
                     Map(position: $position) {
-                        // User's current partial drawing (Fuzzy Multicolor Path)
-                        if !currentDrawingPath.isEmpty {
-                            MapPolyline(coordinates: currentDrawingPath)
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [.red, .purple, .blue, .cyan, .green, .yellow, .orange],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    ),
-                                    style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round)
-                                )
-                        }
-                        
-                        // Previously saved shapes (Overlay Zones)
                         ForEach(savedShapes) { shape in
                             MapPolygon(coordinates: shape.coordinates.map { $0.toCoreLocation })
                                 .foregroundStyle(.indigo.opacity(0.3))
                         }
                         
-                        // Optional Marker
+                        
                         Marker("Apple Park", coordinate: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090))
                     }
                     .mapStyle(currentMapStyle)
                     
-                    // 3. Gesture Overlay (Active only in Draw Mode)
                     if isDrawingMode {
-                        Color.white.opacity(0.001) // Nearly transparent view to catch gestures
-                            .gesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { value in
-                                        // Convert screen point to map coordinate
-                                        if let coordinate = proxy.convert(value.location, from: .local) {
-                                            currentDrawingPath.append(coordinate)
-                                        }
-                                    }
-                                    .onEnded { _ in
-                                        saveCurrentPath()
-                                    }
-                            )
+                        RainbowTrailView(
+                            onUpdate: { location in
+                                // Convert screen point to map coordinate
+                                if let coordinate = proxy.convert(location, from: .local) {
+                                    currentDrawingPath.append(coordinate)
+                                }
+                            },
+                            onEnd: {
+                                saveCurrentPath()
+                            }
+                        )
                     }
                 }
             }
             .ignoresSafeArea()
             
-            // 4. Liquid Glass Control Panel
+            // 4.  Glass Control Panel
             VStack {
                 Spacer()
                 
-                LiquidControlPanel(
+                ControlPanel(
                     isDrawing: $isDrawingMode,
                     shapeCount: savedShapes.count,
                     onClear: clearShapes,
@@ -120,7 +84,6 @@ struct LiquidGlassMap: View {
     }
     
     // MARK: - Logic
-    
     private func saveCurrentPath() {
         guard !currentDrawingPath.isEmpty else { return }
         
@@ -128,7 +91,6 @@ struct LiquidGlassMap: View {
         savedShapes.append(newShape)
         currentDrawingPath = [] // Reset current path (Path disappears)
         
-        // Save to disk
         saveToDisk()
     }
     
@@ -163,9 +125,6 @@ struct LiquidGlassMap: View {
     }
 }
 
-// MARK: - The Liquid Glass Controls
-
-
 #Preview {
-    LiquidGlassMap()
+    GlassMap()
 }

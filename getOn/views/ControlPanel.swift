@@ -1,5 +1,5 @@
 //
-//  LiquidControlPanel.swift
+//  ControlPanel.swift
 //  getOn
 //
 //  Created by Shannah on 29/11/2025.
@@ -9,54 +9,56 @@
 import SwiftUI
 import MapKit
 
-struct LiquidControlPanel: View {
+struct ControlPanel: View {
     @Binding var isDrawing: Bool
     var shapeCount: Int
     var onClear: () -> Void
     @Binding var mapStyleSelection: Int
     
     var body: some View {
-        VStack(spacing: 20) {
-            
-            // Status Info
-            HStack {
+        VStack {
+            HStack(spacing: 12) {
                 VStack(alignment: .leading) {
-                    Text(isDrawing ? "Drawing Mode" : "View Mode")
-                        .font(.headline)
-                        .foregroundStyle(isDrawing ? .blue : .primary)
+                    // time goes here
+                    TimeDate(
+                        date: Date(),
+                    )
+                    
                     Text("\(shapeCount) zones saved")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Spacer()
-            }
-            
-            Divider()
-                .overlay(.white.opacity(0.5))
-            
-            // Action Buttons
-            HStack(spacing: 15) {
+                // ertical Divider
+                Rectangle()
+                    .fill(.secondary.opacity(0.2))
+                    .frame(width: 1, height: 50)
+                
                 Button(action: { isDrawing.toggle() }) {
-                    Label(isDrawing ? "Finish" : "Zone", systemImage: "pencil.tip.crop.circle")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(isDrawing ? .blue.opacity(0.2) : .white.opacity(0.2))
+                    // Swaps icon based on state for clarity: Pencil (Start) vs Checkmark (Finish)
+                    Image(systemName: isDrawing ? "checkmark" : "pencil.tip.crop.circle")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .frame(width: 44, height: 44) // Standard touch target size
+                        .background(isDrawing ? .blue : .white.opacity(0.2))
+                        .foregroundStyle(isDrawing ? .white : .blue)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(.white.opacity(0.4), lineWidth: 1)
+                                .stroke(isDrawing ? .clear : .white.opacity(0.4), lineWidth: 1)
                         )
+                        // Important for icon-only buttons
+                        .accessibilityLabel(isDrawing ? "Finish Drawing" : "Start Zone")
                 }
-                .foregroundStyle(isDrawing ? .blue : .primary)
-                
+
                 Button(action: onClear) {
-                    Label("Clear", systemImage: "trash")
-                        .frame(maxWidth: .infinity)
-                        .padding()
+                    Image(systemName: "trash")
+                        .font(.title3)
+                        .frame(width: 44, height: 44)
                         .background(.red.opacity(0.1))
+                        .foregroundStyle(.red)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .accessibilityLabel("Clear Canvas")
                 }
-                .foregroundStyle(.red)
             }
         }
         .padding(24)
@@ -72,8 +74,8 @@ struct LiquidControlPanel: View {
 }
 
 
-#Preview("LiquidControlPanel Preview") {
-    LiquidControlPanel(
+#Preview("ControlPanel Preview") {
+    ControlPanel(
         isDrawing: .constant(false),
         shapeCount: 3,
         onClear: {},

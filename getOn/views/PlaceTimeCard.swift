@@ -1,5 +1,5 @@
 //
-//  LiquidGlassCard.swift
+//  GlassCard.swift
 //  getOn
 //
 //  Created by Shannah on 29/11/2025.
@@ -33,11 +33,6 @@ struct PlaceTimeCard: View {
                 
                 // Location
                 VStack(alignment: .leading, spacing: 4) {
-                    Image(systemName: "location.fill") // getting direction button
-                        .font(.caption)
-                        .foregroundStyle(tintColor)
-                        .padding(6)
-                        .background(tintColor.opacity(0.2), in: Circle())
                     
                     Text(placeName)
                         .font(.title3)
@@ -49,7 +44,7 @@ struct PlaceTimeCard: View {
             .padding(.horizontal, 30)
             .padding(.vertical, 24)
             .background {
-                // The "Liquid" Stack
+                // The "" Stack
                 ZStack {
                     // 1. Base blur
                     Rectangle()
