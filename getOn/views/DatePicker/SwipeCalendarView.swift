@@ -68,6 +68,7 @@ struct SwipeCalendarView: View {
                         TextField("Title", text: $title)
                             .font(.system(size: 44, weight: .thin, design: .rounded))
                             .contentTransition(.numericText())
+                            .disabled(activeMode != .title)
                             
                     }
                 }
@@ -157,6 +158,7 @@ struct SwipeCalendarView: View {
                     HStack {
                         TextField("Description", text: $description)
                             .contentTransition(.numericText())
+                            .disabled(activeMode != .description)
                     }
                 }
                 .onTapGesture {
