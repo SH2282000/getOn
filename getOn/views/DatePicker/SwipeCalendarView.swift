@@ -2,15 +2,19 @@ import SwiftUI
 
 // MARK: - Interaction Models
 enum EditMode: CaseIterable {
+    case title
     case frequency
     case month
     case dayDuration
+    case description
 }
 
 struct SwipeCalendarView: View {
     @Binding var isExpanded: Bool
     @State private var occurrences: Int = 3
     @State private var isMonthly: Bool = false
+    @State private var title: String = ""
+    @State private var description: String = ""
     @State private var selectedMonth: Int = Calendar.current.component(.month, from: Date())
     @State private var selectedDay: Int = Calendar.current.component(.day, from: Date())
     @State private var durationHours: Int = 2
@@ -40,7 +44,7 @@ struct SwipeCalendarView: View {
             .overlay(.ultraThinMaterial.opacity(0.1))
 
             // 2. Main Content
-            VStack(spacing: 30) {
+            VStack(spacing: 15) {
                 HStack {
                     Spacer()
                     Image(systemName: "xmark.circle.fill")
@@ -54,7 +58,26 @@ struct SwipeCalendarView: View {
                     }
                 }
                 
-                Spacer()
+                
+                GlassRow(
+                    isActive: activeMode == .title,
+                    icon: "waveform.path.ecg",
+                    title: "TITLE"
+                ){
+                    HStack {
+                        TextField("Title", text: $title)
+                            .font(.system(size: 44, weight: .thin, design: .rounded))
+                            .contentTransition(.numericText())
+                            
+                    }
+                }
+                .onTapGesture {
+                    setActive(.title)
+                    // Optional: Tap while active toggles the sub-unit
+                    if activeMode == .title {
+                        feedback.impactOccurred()
+                    }
+                }
                 
                 // --- SECTION 1: FREQUENCY ---
                 GlassRow(
@@ -64,7 +87,7 @@ struct SwipeCalendarView: View {
                 ) {
                     HStack(alignment: .firstTextBaseline) {
                         Text("\(occurrences)")
-                            .font(.system(size: 56, weight: .thin, design: .rounded))
+                            .font(.system(size: 44, weight: .thin, design: .rounded))
                             .contentTransition(.numericText())
                         
                         Text(isMonthly ? "/ month" : "/ week")
@@ -88,7 +111,7 @@ struct SwipeCalendarView: View {
                     title: "MONTH"
                 ) {
                     Text(Calendar.current.monthSymbols[selectedMonth - 1])
-                        .font(.system(size: 44, weight: .light))
+                        .font(.system(size: 34, weight: .light))
                         .contentTransition(.numericText())
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -126,7 +149,24 @@ struct SwipeCalendarView: View {
                     }
                 }
                 
-                Spacer()
+                GlassRow(
+                    isActive: activeMode == .description,
+                    icon: "waveform.path.ecg",
+                    title: "DESCRIPTION"
+                ){
+                    HStack {
+                        TextField("Description", text: $description)
+                            .contentTransition(.numericText())
+                    }
+                }
+                .onTapGesture {
+                    setActive(.description)
+                    // Optional: Tap while active toggles the sub-unit
+                    if activeMode == .description {
+                        feedback.impactOccurred()
+                    }
+                }
+                
                 
                 // Instructional Footer
                 Text("Tap a card to select • Swipe vertically to adjust")
@@ -134,7 +174,7 @@ struct SwipeCalendarView: View {
                     .foregroundStyle(.white.opacity(0.2))
                     .padding(.bottom, 20)
             }
-            .padding(20)
+            .padding(.horizontal, 15)
         }
         // 3. GLOBAL VERTICAL SWIPE GESTURE
         .contentShape(Rectangle()) // Ensures the whole screen captures the gesture
@@ -176,23 +216,25 @@ struct SwipeCalendarView: View {
         // Use withAnimation for smooth numeric transitions
         withAnimation(.interactiveSpring) {
             switch activeMode {
-            case .frequency:
-                let newValue = occurrences + step
-                if newValue >= 1 && newValue <= 30 {
-                    occurrences = newValue
+                case .frequency:
+                    let newValue = occurrences + step
+                    if newValue >= 1 && newValue <= 30 {
+                        occurrences = newValue
+                    }
+                case .month:
+                    let newValue = selectedMonth + step
+                    if newValue >= 1 && newValue <= 12 {
+                        selectedMonth = newValue
+                    }
+                case .dayDuration:
+                    // Adjust Day
+                    let daysInMonth = rangeForMonth(month: selectedMonth)
+                    let newValue = selectedDay + step
+                    if newValue >= 1 && newValue <= daysInMonth {
+                        selectedDay = newValue
                 }
-            case .month:
-                let newValue = selectedMonth + step
-                if newValue >= 1 && newValue <= 12 {
-                    selectedMonth = newValue
-                }
-            case .dayDuration:
-                // Adjust Day
-                let daysInMonth = rangeForMonth(month: selectedMonth)
-                let newValue = selectedDay + step
-                if newValue >= 1 && newValue <= daysInMonth {
-                    selectedDay = newValue
-                }
+                default:
+                    break
             }
         }
     }

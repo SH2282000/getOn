@@ -17,7 +17,7 @@ struct LiquidMapTransitionView: View {
     var body: some View {
         ZStack {
             // 1. The Map (Always in background, but interacts when not expanded)
-            GlassMap(isExpanded: $isExpanded, namespace: glassNamespace)
+            MainView(isExpanded: $isExpanded, namespace: glassNamespace)
                 .zIndex(0)
 
             // 2. The Expanded View (Overlays when active)

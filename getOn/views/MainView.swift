@@ -7,7 +7,7 @@
 import SwiftUI
 import MapKit
 
-struct GlassMap: View {
+struct MainView: View {
     @Binding var isExpanded: Bool
     var namespace: Namespace.ID
     
@@ -105,7 +105,9 @@ struct GlassMap: View {
                 }
         }
     }
-    
+}
+
+extension MainView {
     // MARK: - Logic
     private func saveCurrentPath() {
         guard !currentDrawingPath.isEmpty else { return }
@@ -142,7 +144,7 @@ struct GlassMap: View {
         switch mapStyleSelection {
         case 0: return .standard(elevation: .realistic)
         case 1: return .hybrid(elevation: .realistic)
-//        case 2: return .imagery(elevation: .realistic)
+            //        case 2: return .imagery(elevation: .realistic)
         default: return .standard
         }
     }
@@ -150,5 +152,5 @@ struct GlassMap: View {
 
 #Preview {
     @Previewable @Namespace var glassNamespace
-    GlassMap(isExpanded: .constant(false), namespace: glassNamespace)
+    MainView(isExpanded: .constant(false), namespace: glassNamespace)
 }

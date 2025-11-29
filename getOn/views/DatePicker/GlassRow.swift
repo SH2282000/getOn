@@ -32,7 +32,7 @@ struct GlassRow<Content: View>: View {
                 .foregroundStyle(isActive ? .primary : .secondary)
                 .opacity(isActive ? 1.0 : 0.6)
         }
-        .padding(25)
+        .padding(20)
         .background {
             ZStack {
                 // 1. Base Glass Material
@@ -62,5 +62,34 @@ struct GlassRow<Content: View>: View {
         // Scale effect for active focus
         .scaleEffect(isActive ? 1.02 : 0.98)
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isActive)
+    }
+}
+
+#Preview("TITLE") {
+    GlassRow(
+        isActive: true,
+        icon: "waveform.path.ecg",
+        title: "TITLE"
+    ){
+        HStack {
+            Text("Go to Ski")
+                .font(.largeTitle.bold())
+                .contentTransition(.numericText())
+        }
+    }
+}
+
+
+#Preview("DESCRIPTION") {
+    GlassRow(
+        isActive: true,
+        icon: "waveform.path.ecg",
+        title: "DESCRIPTION"
+    ){
+        HStack {
+            Text("Day")
+                .fontWeight(.medium)
+                .contentTransition(.numericText())
+        }
     }
 }
