@@ -25,7 +25,7 @@ struct getOnApp: App {
 
     var body: some Scene {
         WindowGroup {
-            GlassMap()
+            LiquidMapTransitionView()
         }
         .modelContainer(sharedModelContainer)
     }

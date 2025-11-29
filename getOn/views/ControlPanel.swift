@@ -10,6 +10,7 @@ import SwiftUI
 import MapKit
 
 struct ControlPanel: View {
+    @Binding var isExpanded: Bool
     @Binding var isDrawing: Bool
     var shapeCount: Int
     var onClear: () -> Void
@@ -34,7 +35,6 @@ struct ControlPanel: View {
                     .frame(width: 1, height: 50)
                 
                 Button(action: { isDrawing.toggle() }) {
-                    // Swaps icon based on state for clarity: Pencil (Start) vs Checkmark (Finish)
                     Image(systemName: isDrawing ? "checkmark" : "pencil.tip.crop.circle")
                         .font(.title3)
                         .fontWeight(.semibold)
@@ -76,6 +76,7 @@ struct ControlPanel: View {
 
 #Preview("ControlPanel Preview") {
     ControlPanel(
+        isExpanded: .constant(false),
         isDrawing: .constant(false),
         shapeCount: 3,
         onClear: {},

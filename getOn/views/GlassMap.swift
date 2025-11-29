@@ -8,6 +8,9 @@ import SwiftUI
 import MapKit
 
 struct GlassMap: View {
+    @Binding var isExpanded: Bool
+    var namespace: Namespace.ID
+    
     @State private var position: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090),
@@ -27,7 +30,9 @@ struct GlassMap: View {
     
 
     // Load saved shapes on init
-    init() {
+    init(isExpanded: Binding<Bool>, namespace: Namespace.ID) {
+        _isExpanded = isExpanded
+        self.namespace = namespace
         if let data = try? Data(contentsOf: Self.shapesFileURL),
            let shapes = try? JSONDecoder().decode([SavedMapShape].self, from: data) {
             _savedShapes = State(initialValue: shapes)
@@ -35,51 +40,59 @@ struct GlassMap: View {
     }
     
     var body: some View {
-        ZStack {
-            // 1. Map Reader enables coordinate conversion
-            MapReader { proxy in
-                ZStack {
-                    
-                    Map(position: $position) {
-                        ForEach(savedShapes) { shape in
-                            MapPolygon(coordinates: shape.coordinates.map { $0.toCoreLocation })
-                                .foregroundStyle(.indigo.opacity(0.3))
-                        }
+            ZStack {
+                MapReader { proxy in
+                    ZStack {
                         
-                        
-                        Marker("Apple Park", coordinate: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090))
-                    }
-                    .mapStyle(currentMapStyle)
-                    
-                    if isDrawingMode {
-                        RainbowTrailView(
-                            onUpdate: { location in
-                                // Convert screen point to map coordinate
-                                if let coordinate = proxy.convert(location, from: .local) {
-                                    currentDrawingPath.append(coordinate)
-                                }
-                            },
-                            onEnd: {
-                                saveCurrentPath()
+                        Map(position: $position) {
+                            ForEach(savedShapes) { shape in
+                                MapPolygon(coordinates: shape.coordinates.map { $0.toCoreLocation })
+                                    .foregroundStyle(.indigo.opacity(0.3))
                             }
-                        )
+                            
+                            
+                            Marker("Apple Park", coordinate: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090))
+                        }
+                        .mapStyle(currentMapStyle)
+                        
+                        if isDrawingMode {
+                            RainbowTrailView(
+                                onUpdate: { location in
+                                    // Convert screen point to map coordinate
+                                    if let coordinate = proxy.convert(location, from: .local) {
+                                        currentDrawingPath.append(coordinate)
+                                    }
+                                },
+                                onEnd: {
+                                    saveCurrentPath()
+                                }
+                            )
+                        }
                     }
                 }
-            }
-            .ignoresSafeArea()
-            
-            // 4.  Glass Control Panel
-            VStack {
-                Spacer()
-                
-                ControlPanel(
-                    isDrawing: $isDrawingMode,
-                    shapeCount: savedShapes.count,
-                    onClear: clearShapes,
-                    mapStyleSelection: $mapStyleSelection
-                )
-                .padding(.bottom, 40)
-            }
+                .ignoresSafeArea()
+
+                VStack {
+                    Spacer()
+                        if !isExpanded {
+                        ControlPanel(isExpanded: $isExpanded, isDrawing: $isDrawingMode, shapeCount: savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
+                            .matchedGeometryEffect(id: "GlassBackground", in: namespace)
+                            .frame(maxWidth: 360)
+                            .padding(.bottom, 40)
+                            // Trigger Expansion
+                            .onTapGesture {
+                                withAnimation { isExpanded = true }
+                            }
+                            .gesture(
+                                DragGesture(minimumDistance: 20, coordinateSpace: .global)
+                                    .onEnded { value in
+                                        if value.translation.height < -50 { // Swipe Up
+                                            withAnimation { isExpanded = true }
+                                        }
+                                    }
+                            )
+                    }
+                }
         }
     }
     
@@ -119,12 +132,13 @@ struct GlassMap: View {
         switch mapStyleSelection {
         case 0: return .standard(elevation: .realistic)
         case 1: return .hybrid(elevation: .realistic)
-        case 2: return .imagery(elevation: .realistic)
+//        case 2: return .imagery(elevation: .realistic)
         default: return .standard
         }
     }
 }
 
 #Preview {
-    GlassMap()
+    @Previewable @Namespace var glassNamespace
+    GlassMap(isExpanded: .constant(false), namespace: glassNamespace)
 }

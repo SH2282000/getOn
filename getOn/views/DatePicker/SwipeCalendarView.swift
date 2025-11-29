@@ -7,8 +7,8 @@ enum EditMode: CaseIterable {
     case dayDuration
 }
 
-struct GlobalSwipeView: View {
-    // Data State
+struct SwipeCalendarView: View {
+    @Binding var isExpanded: Bool
     @State private var occurrences: Int = 3
     @State private var isMonthly: Bool = false
     @State private var selectedMonth: Int = Calendar.current.component(.month, from: Date())
@@ -33,14 +33,27 @@ struct GlobalSwipeView: View {
                 .init(0, 1), .init(0.5, 1), .init(1, 1)
             ], colors: [
                 .indigo, .purple, .cyan,
-                .blue, .white.opacity(0.3), .purple,
+                .blue, .white.opacity(0.2), .purple,
                 .cyan, .blue, .indigo
             ])
             .ignoresSafeArea()
-            .overlay(.ultraThinMaterial.opacity(0.3)) // Glass depth
+            .overlay(.ultraThinMaterial.opacity(0.1))
 
             // 2. Main Content
             VStack(spacing: 30) {
+                HStack {
+                    Spacer()
+                    Image(systemName: "xmark.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .colorInvert()
+                        .opacity(0.8)
+                        .padding()
+                        .onTapGesture {
+                        withAnimation { isExpanded = false }
+                    }
+                }
+                
                 Spacer()
                 
                 // --- SECTION 1: FREQUENCY ---
@@ -118,7 +131,7 @@ struct GlobalSwipeView: View {
                 // Instructional Footer
                 Text("Tap a card to select • Swipe vertically to adjust")
                     .font(.caption)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(.white.opacity(0.2))
                     .padding(.bottom, 20)
             }
             .padding(20)
@@ -193,5 +206,5 @@ struct GlobalSwipeView: View {
 }
 
 #Preview {
-    GlobalSwipeView()
+    SwipeCalendarView(isExpanded: .constant(true))
 }
