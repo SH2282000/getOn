@@ -73,6 +73,16 @@ struct GlassMap: View {
                 .ignoresSafeArea()
 
                 VStack {
+                    HStack {
+                        Spacer()
+                        Picker("Style", selection: $mapStyleSelection) {
+                            Image(systemName: "map").tag(0)
+                            Image(systemName: "globe.americas.fill").tag(1)
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 100)
+                        .padding()
+                    }
                     Spacer()
                         if !isExpanded {
                         ControlPanel(isExpanded: $isExpanded, isDrawing: $isDrawingMode, shapeCount: savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
