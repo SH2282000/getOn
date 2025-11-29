@@ -9,20 +9,21 @@ import SwiftUI
 import MapKit
 
 // MARK: - Parent Container
-struct LiquidMapTransitionView: View {
+struct EventsView: View {
     // Transition State
+    @State private var title: String = "Example"
     @State private var isExpanded: Bool = false
     @Namespace private var glassNamespace // For matchedGeometryEffect
 
     var body: some View {
         ZStack {
             // 1. The Map (Always in background, but interacts when not expanded)
-            MainView(isExpanded: $isExpanded, namespace: glassNamespace)
+            MapView(title: $title, isExpanded: $isExpanded, namespace: glassNamespace)
                 .zIndex(0)
 
             // 2. The Expanded View (Overlays when active)
             if isExpanded {
-                SwipeCalendarView(isExpanded: $isExpanded)
+                SwipeCalendarView(title: $title, isExpanded: $isExpanded)
                     .zIndex(1)
                     .transition(.asymmetric(
                         insertion: .opacity.animation(.easeIn(duration: 0.2)),

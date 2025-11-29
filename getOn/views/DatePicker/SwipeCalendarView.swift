@@ -10,10 +10,10 @@ enum EditMode: CaseIterable {
 }
 
 struct SwipeCalendarView: View {
+    @Binding var title: String
     @Binding var isExpanded: Bool
     @State private var occurrences: Int = 3
     @State private var isMonthly: Bool = false
-    @State private var title: String = ""
     @State private var description: String = ""
     @State private var selectedMonth: Int = Calendar.current.component(.month, from: Date())
     @State private var selectedDay: Int = Calendar.current.component(.day, from: Date())
@@ -250,5 +250,5 @@ struct SwipeCalendarView: View {
 }
 
 #Preview {
-    SwipeCalendarView(isExpanded: .constant(true))
+    SwipeCalendarView(title: .constant("hello"),isExpanded: .constant(true))
 }

@@ -7,7 +7,8 @@
 import SwiftUI
 import MapKit
 
-struct MainView: View {
+struct MapView: View {
+    @Binding var title: String
     @Binding var isExpanded: Bool
     var namespace: Namespace.ID
     
@@ -30,7 +31,8 @@ struct MainView: View {
     
 
     // Load saved shapes on init
-    init(isExpanded: Binding<Bool>, namespace: Namespace.ID) {
+    init(title: Binding<String>, isExpanded: Binding<Bool>, namespace: Namespace.ID) {
+        _title = title
         _isExpanded = isExpanded
         self.namespace = namespace
         if let data = try? Data(contentsOf: Self.shapesFileURL),
@@ -85,7 +87,10 @@ struct MainView: View {
                     }
                     Spacer()
                         if !isExpanded {
-                        ControlPanel(isExpanded: $isExpanded, isDrawing: $isDrawingMode, shapeCount: savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
+                            ControlPanel(title: $title,
+                                         isExpanded: $isExpanded,
+                                         isDrawing: $isDrawingMode,
+                                         shapeCount: savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
                             .matchedGeometryEffect(id: "GlassBackground", in: namespace)
                             .frame(maxWidth: 360)
                             .padding(.bottom, 40)
@@ -107,7 +112,7 @@ struct MainView: View {
     }
 }
 
-extension MainView {
+extension MapView {
     // MARK: - Logic
     private func saveCurrentPath() {
         guard !currentDrawingPath.isEmpty else { return }
@@ -152,5 +157,5 @@ extension MainView {
 
 #Preview {
     @Previewable @Namespace var glassNamespace
-    MainView(isExpanded: .constant(false), namespace: glassNamespace)
+    MapView(title: .constant("erfg"), isExpanded: .constant(false), namespace: glassNamespace)
 }

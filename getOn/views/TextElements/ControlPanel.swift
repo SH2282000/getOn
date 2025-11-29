@@ -10,6 +10,7 @@ import SwiftUI
 import MapKit
 
 struct ControlPanel: View {
+    @Binding var title: String
     @Binding var isExpanded: Bool
     @Binding var isDrawing: Bool
     var shapeCount: Int
@@ -20,6 +21,9 @@ struct ControlPanel: View {
         VStack {
             HStack(spacing: 12) {
                 VStack(alignment: .leading) {
+                    Text(title)
+                        .font(.title)
+                    
                     // time goes here
                     TimeDate(
                         date: Date(),
@@ -76,6 +80,7 @@ struct ControlPanel: View {
 
 #Preview("ControlPanel Preview") {
     ControlPanel(
+        title: .constant("Make Friends"),
         isExpanded: .constant(false),
         isDrawing: .constant(false),
         shapeCount: 3,
