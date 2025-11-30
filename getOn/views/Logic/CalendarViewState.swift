@@ -10,6 +10,7 @@ import SwiftUI
 import MapKit
 
 struct CalendarViewState {
+    var uuid: UUID = UUID()
     var title: String = "Example"
     var isExpanded: Bool = false
     var occurrences: Int = 3
@@ -29,4 +30,5 @@ struct CalendarViewState {
         components.minute = 0
         return calendar.date(from: components) ?? Date()
     }
+    var savedShapes: [SavedMapShape] = []
 }

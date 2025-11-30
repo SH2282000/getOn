@@ -17,7 +17,6 @@ struct MapView: View {
     
     @State private var isDrawingMode: Bool = false
     @State private var currentDrawingPath: [CLLocationCoordinate2D] = []
-    @State private var savedShapes: [SavedMapShape] = []
     @State private var mapStyleSelection: Int = 0
     
     var body: some View {
@@ -28,7 +27,7 @@ struct MapView: View {
                         Map(position: $position) {
                             UserAnnotation()
                             
-                            ForEach(savedShapes) { shape in
+                            ForEach(calendarState.savedShapes) { shape in
                                 MapPolygon(coordinates: shape.coordinates.map { $0.toCoreLocation })
                                     .foregroundStyle(.indigo.opacity(0.3))
                             }
@@ -76,7 +75,7 @@ struct MapView: View {
                                 title: $calendarState.title,
                                 isExpanded: $calendarState.isExpanded,
                                  isDrawing: $isDrawingMode,
-                                 shapeCount: savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
+                                shapeCount: calendarState.savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
                             .matchedGeometryEffect(id: "GlassBackground", in: namespace)
                             .frame(maxWidth: 360)
                             .padding(.bottom, 40)
@@ -107,7 +106,7 @@ extension MapView {
         guard !currentDrawingPath.isEmpty else { return }
         
         let newShape = SavedMapShape(coordinates: currentDrawingPath.map { CodableCoordinate($0) })
-        savedShapes.append(newShape)
+        calendarState.savedShapes.append(newShape)
         currentDrawingPath = [] // Reset current path (Path disappears)
         
         Task {
@@ -116,7 +115,7 @@ extension MapView {
     }
     
     private func clearShapes() {
-        savedShapes.removeAll()
+        calendarState.savedShapes.removeAll()
         currentDrawingPath.removeAll()
         Task {
             try? FileManager.default.removeItem(at: Self.shapesFileURL)
@@ -128,7 +127,7 @@ extension MapView {
             let data = try Data(contentsOf: Self.shapesFileURL)
             let shapes = try JSONDecoder().decode([SavedMapShape].self, from: data)
             await MainActor.run {
-                self.savedShapes = shapes
+                self.calendarState.savedShapes = shapes
             }
         } catch {
             print("Error loading shapes: \(error)")
@@ -137,7 +136,7 @@ extension MapView {
 
     private func saveToDisk() async {
         do {
-            let data = try JSONEncoder().encode(savedShapes)
+            let data = try JSONEncoder().encode(calendarState.savedShapes)
             try data.write(to: Self.shapesFileURL)
             print("Saved to: \(Self.shapesFileURL)")
         } catch {
