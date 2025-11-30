@@ -8,8 +8,7 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
-    @Binding var title: String
-    @Binding var isExpanded: Bool
+    @Binding var calendarState: CalendarViewState
     var namespace: Namespace.ID
     
     @State private var position: MapCameraPosition = .region(
@@ -29,17 +28,6 @@ struct MapView: View {
     @State private var showSettings: Bool = false
     @State private var cardColor: Color = .white
     
-
-    // Load saved shapes on init
-    init(title: Binding<String>, isExpanded: Binding<Bool>, namespace: Namespace.ID) {
-        _title = title
-        _isExpanded = isExpanded
-        self.namespace = namespace
-        if let data = try? Data(contentsOf: Self.shapesFileURL),
-           let shapes = try? JSONDecoder().decode([SavedMapShape].self, from: data) {
-            _savedShapes = State(initialValue: shapes)
-        }
-    }
     
     var body: some View {
             ZStack {
@@ -86,28 +74,33 @@ struct MapView: View {
                         .padding()
                     }
                     Spacer()
-                        if !isExpanded {
-                            ControlPanel(title: $title,
-                                         isExpanded: $isExpanded,
-                                         isDrawing: $isDrawingMode,
-                                         shapeCount: savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
+                    if !calendarState.isExpanded {
+                            ControlPanel(
+                                calendarState: $calendarState,
+                                title: $calendarState.title,
+                                isExpanded: $calendarState.isExpanded,
+                                 isDrawing: $isDrawingMode,
+                                 shapeCount: savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
                             .matchedGeometryEffect(id: "GlassBackground", in: namespace)
                             .frame(maxWidth: 360)
                             .padding(.bottom, 40)
                             // Trigger Expansion
                             .onTapGesture {
-                                withAnimation { isExpanded = true }
+                                withAnimation { calendarState.isExpanded = true }
                             }
                             .gesture(
                                 DragGesture(minimumDistance: 20, coordinateSpace: .global)
                                     .onEnded { value in
                                         if value.translation.height < -50 { // Swipe Up
-                                            withAnimation { isExpanded = true }
+                                            withAnimation { calendarState.isExpanded = true }
                                         }
                                     }
                             )
                     }
                 }
+        }
+        .task {
+            await loadShapes()
         }
     }
 }
@@ -121,16 +114,32 @@ extension MapView {
         savedShapes.append(newShape)
         currentDrawingPath = [] // Reset current path (Path disappears)
         
-        saveToDisk()
+        Task {
+            await saveToDisk()
+        }
     }
     
     private func clearShapes() {
         savedShapes.removeAll()
         currentDrawingPath.removeAll()
-        try? FileManager.default.removeItem(at: Self.shapesFileURL)
+        Task {
+            try? FileManager.default.removeItem(at: Self.shapesFileURL)
+        }
     }
     
-    private func saveToDisk() {
+    private func loadShapes() async {
+        do {
+            let data = try Data(contentsOf: Self.shapesFileURL)
+            let shapes = try JSONDecoder().decode([SavedMapShape].self, from: data)
+            await MainActor.run {
+                self.savedShapes = shapes
+            }
+        } catch {
+            print("Error loading shapes: \(error)")
+        }
+    }
+
+    private func saveToDisk() async {
         do {
             let data = try JSONEncoder().encode(savedShapes)
             try data.write(to: Self.shapesFileURL)
@@ -157,5 +166,7 @@ extension MapView {
 
 #Preview {
     @Previewable @Namespace var glassNamespace
-    MapView(title: .constant("erfg"), isExpanded: .constant(false), namespace: glassNamespace)
+    @Previewable @State var calendarState: CalendarViewState = .init()
+
+    MapView(calendarState: .constant(calendarState), namespace: glassNamespace)
 }

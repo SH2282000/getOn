@@ -17,7 +17,7 @@ struct EventsView: View {
     var body: some View {
         ZStack {
             // 1. The Map (Always in background, but interacts when not expanded)
-            MapView(title: $calendarState.title, isExpanded: $calendarState.isExpanded, namespace: glassNamespace)
+            MapView(calendarState: $calendarState, namespace: glassNamespace)
                 .zIndex(0)
 
             // 2. The Expanded View (Overlays when active)

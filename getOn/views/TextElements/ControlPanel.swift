@@ -10,6 +10,7 @@ import SwiftUI
 import MapKit
 
 struct ControlPanel: View {
+    @Binding var calendarState: CalendarViewState
     @Binding var title: String
     @Binding var isExpanded: Bool
     @Binding var isDrawing: Bool
@@ -26,7 +27,7 @@ struct ControlPanel: View {
                     
                     // time goes here
                     TimeDate(
-                        date: Date(),
+                        date: $calendarState.date,
                     )
                     
                     Text("\(shapeCount) zones saved")
@@ -79,7 +80,10 @@ struct ControlPanel: View {
 
 
 #Preview("ControlPanel Preview") {
+    @Previewable @State var calendarState: CalendarViewState = .init()
+    
     ControlPanel(
+        calendarState: .constant(calendarState),
         title: .constant("Make Friends"),
         isExpanded: .constant(false),
         isDrawing: .constant(false),

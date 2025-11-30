@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TimeDate: View {
-    let date: Date
+    @Binding var date: Date
     var body: some View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(date, format: .dateTime.hour().minute())
@@ -25,7 +25,7 @@ struct TimeDate: View {
 
 #Preview {
     TimeDate(
-        date: Date(),
+        date: .constant(Date()),
     )
     .padding()
 }

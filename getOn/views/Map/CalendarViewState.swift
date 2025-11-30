@@ -17,5 +17,6 @@ struct CalendarViewState {
     var description: String = ""
     var selectedMonth: Int = Calendar.current.component(.month, from: Date())
     var selectedDay: Int = Calendar.current.component(.day, from: Date())
+    var date: Date = Date()
     var durationHours: Int = 2
 }
