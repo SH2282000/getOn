@@ -1,0 +1,5 @@
+.DS_Store
+getOn.xcworkspace
+xcuserdata
+
+.build/

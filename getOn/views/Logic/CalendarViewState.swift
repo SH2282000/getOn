@@ -34,3 +34,35 @@ struct CalendarViewState: Identifiable {
     }
     var savedShapes: [SavedMapShape] = []
 }
+
+extension CalendarViewState {
+    func toDTO() -> CalendarViewStateDTO {
+        CalendarViewStateDTO(
+            uuid: uuid,
+            title: title,
+            colorHex: color.toHex() ?? "0000FF",
+            isExpanded: isExpanded,
+            occurrences: occurrences,
+            isMonthly: isMonthly,
+            description: description,
+            selectedMonth: selectedMonth,
+            selectedDay: selectedDay,
+            hours: hours,
+            savedShapes: savedShapes.map { $0.toDTO() }
+        )
+    }
+    
+    init(from dto: CalendarViewStateDTO) {
+        self.uuid = dto.uuid
+        self.title = dto.title
+        self.color = Color(hex: dto.colorHex)
+        self.isExpanded = dto.isExpanded
+        self.occurrences = dto.occurrences
+        self.isMonthly = dto.isMonthly
+        self.description = dto.description
+        self.selectedMonth = dto.selectedMonth
+        self.selectedDay = dto.selectedDay
+        self.hours = dto.hours
+        self.savedShapes = dto.savedShapes.map { SavedMapShape(from: $0) }
+    }
+}
