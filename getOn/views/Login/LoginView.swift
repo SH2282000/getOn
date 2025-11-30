@@ -48,23 +48,25 @@ struct LoginView: View {
                 // Sign in Buttons
                 VStack(spacing: 16) {
                     // Apple Sign In
-                    SignInWithAppleButton(
-                        onRequest: { request in
-                            request.requestedScopes = [.fullName, .email]
-                        },
-                        onCompletion: { result in
-                            switch result {
-                            case .success(let authResults):
-                                print("Authorization successful: \(authResults)")
-                                authManager.signInWithApple()
-                            case .failure(let error):
-                                print("Authorization failed: \(error.localizedDescription)")
+                    if !authManager.isAuthenticated {
+                        SignInWithAppleButton(
+                            onRequest: { request in
+                                request.requestedScopes = [.fullName, .email]
+                            },
+                            onCompletion: { result in
+                                switch result {
+                                case .success(let authResults):
+                                    print("Authorization successful: \(authResults)")
+                                    authManager.signInWithApple()
+                                case .failure(let error):
+                                    print("Authorization failed: \(error.localizedDescription)")
+                                }
                             }
-                        }
-                    )
-                    .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-                    .frame(height: 50)
-                    .cornerRadius(20)
+                        )
+                        .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+                        .frame(height: 50)
+                        .cornerRadius(20)
+                    
                     
                     // Google Sign In (Custom Button)
                     Button(action: {
@@ -74,7 +76,7 @@ struct LoginView: View {
                             Image(systemName: "g.circle.fill") // Placeholder for Google Logo
                                 .resizable()
                                 .frame(width: 20, height: 20)
-                            Text("Sign in with Google")
+                            Text("Sign in with Bobole")
                                 .font(.system(size: 19, weight: .medium))
                         }
                         .frame(maxWidth: .infinity)
@@ -87,15 +89,16 @@ struct LoginView: View {
                                 .stroke(Color.gray.opacity(0.2), lineWidth: 1)
                         )
                     }
-                    
+                    }
                     TextField("Username", text: $username).padding().glassEffect()
                 }
                 .padding(.horizontal, 30)
                 
+                
                 Spacer()
                 
                 // Footer
-                Text("By continuing, you agree to our Terms of Service and Privacy Policy.")
+                Text("By continuing, you agree that you are European and do not give your data to the US.")
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
