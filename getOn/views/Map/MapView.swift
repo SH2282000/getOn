@@ -23,12 +23,6 @@ struct MapView: View {
     @State private var savedShapes: [SavedMapShape] = []
     @State private var mapStyleSelection: Int = 0
     
-    // Concrete Place and Time
-    @State private var placeName: String = "Cupertino, CA"
-    @State private var showSettings: Bool = false
-    @State private var cardColor: Color = .white
-    
-    
     var body: some View {
             ZStack {
                 MapReader { proxy in
