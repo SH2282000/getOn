@@ -9,12 +9,12 @@
 import SwiftUI
 
 struct LiquidTabBar: View {
-    @Binding var selectedTab: Tab
+    @Binding var selectedTab: Tabs
     @Namespace private var animation
     
     var body: some View {
         HStack {
-            ForEach(Tab.allCases, id: \.self) { tab in
+            ForEach(Tabs.allCases, id: \.self) { tab in
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         selectedTab = tab

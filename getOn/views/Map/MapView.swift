@@ -98,9 +98,7 @@ struct MapView: View {
                                     shapeCount: state.savedShapes.count, onClear: clearShapes, mapStyleSelection: $mapStyleSelection)
                                 .glassEffectTransition(.matchedGeometry)
                                 .tag(state.uuid)
-                                .padding(20)
-                                .padding(.bottom, 100)
-                                // Trigger Expansion
+                                .padding(.horizontal, 20)
                                 .onTapGesture {
                                     withAnimation { state.isExpanded = true }
                                 }

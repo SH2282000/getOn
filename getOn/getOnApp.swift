@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct getOnApp: App {
+    @StateObject private var authManager = AuthenticationManager()
+    @State var username: String = ""
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -25,7 +28,13 @@ struct getOnApp: App {
 
     var body: some Scene {
         WindowGroup {
-            EventsView()
+            if authManager.isAuthenticated {
+                NavigationView(username: $username)
+                    .environmentObject(authManager)
+            } else {
+                LoginView(username: $username)
+                    .environmentObject(authManager)
+            }
         }
         .modelContainer(sharedModelContainer)
     }

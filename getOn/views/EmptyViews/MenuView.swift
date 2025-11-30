@@ -7,41 +7,21 @@
 
 import SwiftUI
 
-enum Tab: String, CaseIterable {
-    case search = "magnifyingglass"
-    case events = "calendar.badge.clock"
-    case profile = "person.crop.circle"
-    case settings = "gearshape.fill"
-    
-    var title: String {
-        switch self {
-        case .search: return "Search"
-        case .events: return "Events"
-        case .profile: return "Profile"
-        case .settings: return "Settings"
-        }
-    }
-}
-
 struct MenuView: View {
-    @State private var selectedTab: Tab = .events
+    @State private var selectedTab: Tabs = .events
     
     var body: some View {
         ZStack {
-            // Content Layer
-            // Using a ZStack for content to avoid state loss when switching if possible,
-            // or just a Switch for simplicity. For complex views like Maps, keeping them alive is often better.
-            // Here we use a switch for standard tab behavior.
             Group {
                 switch selectedTab {
                 case .search:
-                    PlaceholderView(title: "Search", icon: Tab.search.rawValue)
+                    PlaceholderView(title: "Search", icon: Tabs.search.rawValue)
                 case .events:
                     EventsView()
                 case .profile:
-                    PlaceholderView(title: "Profile", icon: Tab.profile.rawValue)
+                    PlaceholderView(title: "Profile", icon: Tabs.profile.rawValue)
                 case .settings:
-                    PlaceholderView(title: "Settings", icon: Tab.settings.rawValue)
+                    PlaceholderView(title: "Settings", icon: Tabs.settings.rawValue)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -57,7 +37,6 @@ struct MenuView: View {
         .ignoresSafeArea(.keyboard) // Prevent tab bar from moving up with keyboard
     }
 }
-
 
 #Preview {
     MenuView()
