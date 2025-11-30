@@ -19,26 +19,27 @@ struct ControlPanel: View {
     @Binding var mapStyleSelection: Int
     
     var body: some View {
-        VStack {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading) {
-                    Text(title)
-                        .font(.title)
-                    
-                    // time goes here
-                    TimeDate(
-                        date: calendarState.date,
-                    )
-                    
-                    Text("\(shapeCount) zones saved")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                // ertical Divider
-                Rectangle()
-                    .fill(.secondary.opacity(0.2))
-                    .frame(width: 1, height: 50)
-                
+        HStack(spacing: 10) {
+            VStack(alignment: .leading) {
+                Text(title)
+                    .font(.title)
+
+                // time goes here
+                TimeDate(
+                    date: calendarState.date,
+                )
+
+                Text("\(shapeCount) zones saved")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // ertical Divider
+            Rectangle()
+                .fill(.secondary.opacity(0.2))
+                .frame(width: 1, height: 50)
+
+            HStack {
                 Button(action: { isDrawing.toggle() }) {
                     Image(systemName: isDrawing ? "checkmark" : "pencil.tip.crop.circle")
                         .font(.title3)
@@ -51,10 +52,9 @@ struct ControlPanel: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(isDrawing ? .clear : .white.opacity(0.4), lineWidth: 1)
                         )
-                        // Important for icon-only buttons
+                    // Important for icon-only buttons
                         .accessibilityLabel(isDrawing ? "Finish Drawing" : "Start Zone")
                 }
-
                 Button(action: onClear) {
                     Image(systemName: "trash")
                         .font(.title3)
@@ -66,15 +66,22 @@ struct ControlPanel: View {
                 }
             }
         }
-        .padding(24)
-        .background(.ultraThinMaterial)
+        .padding(20)
+        .frame(maxWidth: .infinity) // Make the HStack fill the maximum width
+        .background(
+            ZStack {
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                Rectangle()
+                    .fill(calendarState.color.opacity(0.1))
+            }
+        )
         .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .strokeBorder(.white.opacity(0.4), lineWidth: 1.5)
+                .strokeBorder(calendarState.color.opacity(0.5), lineWidth: 0.5)
         )
         .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
-        .padding(.horizontal)
     }
 }
 
@@ -84,7 +91,7 @@ struct ControlPanel: View {
     
     ControlPanel(
         calendarState: .constant(calendarState),
-        title: .constant("Make Friends"),
+        title: .constant("Ma"),
         isExpanded: .constant(false),
         isDrawing: .constant(false),
         shapeCount: 3,

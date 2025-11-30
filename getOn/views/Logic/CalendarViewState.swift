@@ -9,9 +9,11 @@
 import SwiftUI
 import MapKit
 
-struct CalendarViewState {
+struct CalendarViewState: Identifiable {
     var uuid: UUID = UUID()
+    var id: UUID { uuid }
     var title: String = "Example"
+    var color: Color = .blue
     var isExpanded: Bool = false
     var occurrences: Int = 3
     var isMonthly: Bool = false
