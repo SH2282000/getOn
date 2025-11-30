@@ -10,22 +10,15 @@ import MapKit
 
 // MARK: - Parent Container
 struct EventsView: View {
+    @EnvironmentObject var authManager: AuthenticationManager
     @State private var calendarStates: [CalendarViewState] = [
         CalendarViewState(title: "Go Fishing", color: .blue),
         CalendarViewState(title: "Painting Course", color: .pink),
         CalendarViewState(title: "Go Skiing", color: .green)
     ]
-    @State private var selectedID: UUID
+    @State private var selectedID: UUID = UUID()
     
-    init() {
-        let states = [
-            CalendarViewState(title: "Go Fishing", color: .blue),
-            CalendarViewState(title: "Painting Course", color: .pink),
-            CalendarViewState(title: "Go Skiing", color: .green)
-        ]
-        _calendarStates = State(initialValue: states)
-        _selectedID = State(initialValue: states[0].uuid)
-    }
+    // Default initializer is sufficient now
     
     @Namespace private var glassNamespace // For matchedGeometryEffect
 
@@ -47,6 +40,20 @@ struct EventsView: View {
             }
         }
         .animation(.spring(response: 0.6, dampingFraction: 0.7), value: calendarStates.first(where: { $0.uuid == selectedID })?.isExpanded)
+        .task {
+            // Fetch data when view appears
+            do {
+                let fetchedStates = try await APIManager.shared.fetchCalendarStates(username: authManager.username)
+                if !fetchedStates.isEmpty {
+                    self.calendarStates = fetchedStates
+                    if let first = fetchedStates.first {
+                        self.selectedID = first.uuid
+                    }
+                }
+            } catch {
+                print("Error fetching calendar states: \(error)")
+            }
+        }
     }
 }
 

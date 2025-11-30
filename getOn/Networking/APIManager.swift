@@ -2,7 +2,7 @@ import Foundation
 
 class APIManager {
     static let shared = APIManager()
-    private let baseURL = "http://localhost:8080/calendar"
+    private let baseURL = "http://172.20.10.4:8081/calendar"
     
     func saveCalendarStates(username: String, states: [CalendarViewState]) async throws {
         let dtos = states.map { $0.toDTO() }

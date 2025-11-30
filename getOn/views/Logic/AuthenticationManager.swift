@@ -12,6 +12,7 @@ import Combine
 class AuthenticationManager: ObservableObject {
     @Published var isAuthenticated: Bool = false
     @Published var userId: String?
+    @Published var username: String = ""
     
     func signInWithApple() {
         print("Simulating Apple Sign In...")

@@ -10,6 +10,7 @@ enum EditMode: CaseIterable {
 }
 
 struct SwipeCalendarView: View {
+    @EnvironmentObject var authManager: AuthenticationManager
     @Binding var calendarState: CalendarViewState
     
     // Interaction State
@@ -48,6 +49,9 @@ struct SwipeCalendarView: View {
                         .padding()
                         .onTapGesture {
                             withAnimation { calendarState.isExpanded = false }
+                            Task {
+                                try? await APIManager.shared.saveCalendarStates(username: authManager.username, states: [calendarState])
+                            }
                     }
                 }
                 
@@ -246,4 +250,5 @@ struct SwipeCalendarView: View {
     @Previewable @State var calendarState: CalendarViewState = .init()
     
     SwipeCalendarView(calendarState: .constant(calendarState))
+        .environmentObject(AuthenticationManager())
 }

@@ -9,7 +9,6 @@ import SwiftUI
 import AuthenticationServices
 
 struct LoginView: View {
-    @Binding var username: String
     @EnvironmentObject var authManager: AuthenticationManager
     @Environment(\.colorScheme) var colorScheme
     
@@ -90,7 +89,7 @@ struct LoginView: View {
                         )
                     }
                     }
-                    TextField("Username", text: $username).padding().glassEffect()
+                    TextField("Username", text: $authManager.username).padding().glassEffect()
                 }
                 .padding(.horizontal, 30)
                 
@@ -110,6 +109,6 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView(username: .constant("Shannah"))
+    LoginView()
         .environmentObject(AuthenticationManager())
 }

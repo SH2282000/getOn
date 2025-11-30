@@ -9,7 +9,6 @@ import SwiftUI
 
 struct NavigationView: View {
     @State var activeTab: Tabs = .events
-    @Binding var username: String
     
     var body: some View {
         TabView(selection: $activeTab) {
@@ -26,7 +25,7 @@ struct NavigationView: View {
                     Text(Tabs.search.title)
                 }
             
-            LoginView(username: $username)
+            LoginView()
                 .tag(Tabs.profile)
                 .tabItem {
                     Image(systemName: Tabs.profile.rawValue)
@@ -44,5 +43,5 @@ struct NavigationView: View {
 }
 
 #Preview {
-    NavigationView(username: .constant("Shannah"))
+    NavigationView()
 }
