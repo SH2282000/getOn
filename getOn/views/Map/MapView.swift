@@ -11,12 +11,9 @@ struct MapView: View {
     @Binding var calendarState: CalendarViewState
     var namespace: Namespace.ID
     
-    @State private var position: MapCameraPosition = .region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090),
-            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        )
-    )
+    @StateObject private var locationManager = LocationManager()
+    
+    @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
     
     @State private var isDrawingMode: Bool = false
     @State private var currentDrawingPath: [CLLocationCoordinate2D] = []
@@ -29,15 +26,20 @@ struct MapView: View {
                     ZStack {
                         
                         Map(position: $position) {
+                            UserAnnotation()
+                            
                             ForEach(savedShapes) { shape in
                                 MapPolygon(coordinates: shape.coordinates.map { $0.toCoreLocation })
                                     .foregroundStyle(.indigo.opacity(0.3))
                             }
                             
                             
-                            Marker("Apple Park", coordinate: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090))
+                            Marker("Munich", coordinate: CLLocationCoordinate2D(latitude: 37.3346, longitude: -122.0090))
                         }
                         .mapStyle(currentMapStyle)
+                        .onAppear {
+                            locationManager.requestLocation()
+                        }
                         
                         if isDrawingMode {
                             RainbowTrailView(
