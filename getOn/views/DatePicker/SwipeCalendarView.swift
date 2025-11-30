@@ -125,7 +125,7 @@ struct SwipeCalendarView: View {
                         
                         Spacer()
                         
-                        Text("\(calendarState.durationHours) hr")
+                        Text("\(calendarState.hours) hr")
                             .font(.title)
                             .foregroundStyle(.secondary)
                             .contentTransition(.numericText())
@@ -137,7 +137,7 @@ struct SwipeCalendarView: View {
                     // For now, let's keep swipe for Day, and maybe auto-cycle duration on tap?
                     if activeMode == .dayDuration {
                         withAnimation {
-                            calendarState.durationHours = (calendarState.durationHours % 12) + 1
+                            calendarState.hours = (calendarState.hours % 12) + 1
                         }
                         feedback.impactOccurred()
                     }

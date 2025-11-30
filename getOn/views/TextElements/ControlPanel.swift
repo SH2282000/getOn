@@ -27,7 +27,7 @@ struct ControlPanel: View {
                     
                     // time goes here
                     TimeDate(
-                        date: $calendarState.date,
+                        date: calendarState.date,
                     )
                     
                     Text("\(shapeCount) zones saved")
