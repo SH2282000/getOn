@@ -10,7 +10,7 @@ public func configure(_ app: Application) async throws {
     app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
 
     app.migrations.add(CreateUserCalendarDataMigration())
-    
+
     // Auto-migrate for simplicity in this dev environment
     try await app.autoMigrate()
 
