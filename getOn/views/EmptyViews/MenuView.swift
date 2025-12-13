@@ -18,8 +18,8 @@ struct MenuView: View {
                     PlaceholderView(title: "Search", icon: Tabs.search.rawValue)
                 case .events:
                     EventsView()
-                case .profile:
-                    PlaceholderView(title: "Profile", icon: Tabs.profile.rawValue)
+                case .offline:
+                    PlaceholderView(title: "Profile", icon: Tabs.offline.rawValue)
                 case .settings:
                     PlaceholderView(title: "Settings", icon: Tabs.settings.rawValue)
                 }
