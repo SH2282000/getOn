@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:getOn}/Server",
+            "name": "Debug App (Server)",
+            "target": "App",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug App (Server)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:getOn}/Server",
+            "name": "Release App (Server)",
+            "target": "App",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release App (Server)"
+        }
+    ]
+}
