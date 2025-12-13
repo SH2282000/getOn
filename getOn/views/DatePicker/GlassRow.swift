@@ -15,7 +15,7 @@ struct GlassRow<Content: View>: View {
     @ViewBuilder let content: Content
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
+        VStack(alignment: .leading, spacing: 5) {
             HStack {
                 Text(title)
                     .font(.caption2)
@@ -32,17 +32,17 @@ struct GlassRow<Content: View>: View {
                 .foregroundStyle(isActive ? .primary : .secondary)
                 .opacity(isActive ? 1.0 : 0.6)
         }
-        .padding(20)
+        .padding(15)
         .background {
             ZStack {
                 // 1. Base Glass Material
-                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(.ultraThinMaterial)
                     .opacity(isActive ? 1.0 : 0.6) // Dim inactive cards
                 
                 // 2. Active State: Glow & Border
                 if isActive {
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .strokeBorder(
                             LinearGradient(
                                 colors: [.white.opacity(0.8), .white.opacity(0.2)],
@@ -54,7 +54,7 @@ struct GlassRow<Content: View>: View {
                         .shadow(color: .white.opacity(0.2), radius: 10, x: 0, y: 0)
                 } else {
                     // Inactive State: Subtle Border
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .strokeBorder(.white.opacity(0.1), lineWidth: 1)
                 }
             }

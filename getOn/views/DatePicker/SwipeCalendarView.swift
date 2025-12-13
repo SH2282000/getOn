@@ -41,7 +41,7 @@ struct SwipeCalendarView: View {
             VStack(spacing: 15) {
                 HStack {
                     Spacer()
-                    Image(systemName: "xmark.circle.fill")
+                    Image(systemName: "checkmark.circle.fill")
                         .resizable()
                         .frame(width: 30, height: 30)
                         .colorInvert()
@@ -63,7 +63,7 @@ struct SwipeCalendarView: View {
                 ){
                     HStack {
                         TextField("Title", text: $calendarState.title)
-                            .font(.system(size: 44, weight: .thin, design: .rounded))
+                            .font(.system(size: 20, weight: .thin, design: .rounded))
                             .contentTransition(.numericText())
                             .disabled(activeMode != .title)
                             
@@ -168,22 +168,21 @@ struct SwipeCalendarView: View {
                 
                 
                 // Instructional Footer
-                Text("Tap a card to select • Swipe vertically to adjust")
+                Text("Tap a card to select • Swipe horizontally to adjust")
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.2))
                     .padding(.bottom, 20)
             }
             .padding(.horizontal, 15)
         }
-        // 3. GLOBAL VERTICAL SWIPE GESTURE
+        // 3. GLOBAL horizontal SWIPE GESTURE
         .contentShape(Rectangle()) // Ensures the whole screen captures the gesture
         .gesture(
             DragGesture(minimumDistance: 10, coordinateSpace: .local)
                 .onChanged { value in
-                    // Calculate vertical delta only
-                    let verticalTranslation = value.translation.height
-                    let delta = lastDragValue - verticalTranslation // Inverted for natural scroll feel
-                    
+                    // Calculate horizontal delta only
+                    let horizontalTranslation = value.translation.width
+                    let delta = horizontalTranslation - lastDragValue
                     // Sensitivity factor (higher = slower change)
                     let sensitivity: CGFloat = 30
                     
@@ -192,7 +191,7 @@ struct SwipeCalendarView: View {
                         adjustActiveValue(by: step)
                         
                         // Reset reference for continuous swiping
-                        lastDragValue = verticalTranslation
+                        lastDragValue = horizontalTranslation
                         selectionFeedback.selectionChanged()
                     }
                 }

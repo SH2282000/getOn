@@ -39,3 +39,7 @@ struct LiquidBackground: View {
         }
     }
 }
+
+#Preview {
+    LiquidBackground()
+}

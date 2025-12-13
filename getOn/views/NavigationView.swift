@@ -18,25 +18,23 @@ struct NavigationView: View {
                     Image(systemName: "calendar")
                 }
             
-            PlaceholderView(title: Tabs.search.title, icon: Tabs.search.rawValue)
+            ExternalEventsView()
                 .tag(Tabs.search)
                 .tabItem {
                     Image(systemName: Tabs.search.rawValue)
-                    Text(Tabs.search.title)
                 }
             
             LoginView()
-                .tag(Tabs.profile)
+                .tag(Tabs.offline)
                 .tabItem {
-                    Image(systemName: Tabs.profile.rawValue)
-                    Text(Tabs.profile.title)
+                    Image(systemName: Tabs.offline.rawValue)
                 }
             
-            PlaceholderView(title: Tabs.settings.title, icon: Tabs.settings.rawValue)
-                .tag(Tabs.profile)
+            Spacer()
+            PlaceholderView(title: Tabs.settings.title, icon: Tabs.settings.rawValue) // TODO: move the profile part to settings
+                .tag(Tabs.settings)
                 .tabItem {
                     Image(systemName: Tabs.settings.rawValue)
-                    Text(Tabs.settings.title)
                 }
         }
     }
