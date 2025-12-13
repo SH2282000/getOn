@@ -24,21 +24,12 @@ struct SwipeCalendarView: View {
 
     var body: some View {
         ZStack {
-            // 1. Dynamic  Background
-            MeshGradient(width: 3, height: 3, points: [
-                .init(0, 0), .init(0.5, 0), .init(1, 0),
-                .init(0, 0.5), .init(0.8, 0.5), .init(1, 0.5),
-                .init(0, 1), .init(0.5, 1), .init(1, 1)
-            ], colors: [
-                .indigo, .purple, .cyan,
-                .blue, .white.opacity(0.2), .purple,
-                .cyan, .blue, .indigo
-            ])
-            .ignoresSafeArea()
-            .overlay(.ultraThinMaterial.opacity(0.1))
+            LiquidBackground()
+                .ignoresSafeArea()
+                .overlay(.ultraThinMaterial.opacity(0.1))
 
             // 2. Main Content
-            VStack(spacing: 15) {
+            VStack {
                 HStack {
                     Spacer()
                     Image(systemName: "checkmark.circle.fill")
@@ -56,122 +47,125 @@ struct SwipeCalendarView: View {
                 }
                 
                 
-                GlassRow(
-                    isActive: activeMode == .title,
-                    icon: "waveform.path.ecg",
-                    title: "TITLE"
-                ){
-                    HStack {
-                        TextField("Title", text: $calendarState.title)
-                            .font(.system(size: 20, weight: .thin, design: .rounded))
-                            .contentTransition(.numericText())
-                            .disabled(activeMode != .title)
+                ScrollView(showsIndicators: false) {
+                    // --- SECTION 0: TITLE ---
+                    GlassRow(
+                        isActive: activeMode == .title,
+                        icon: "waveform.path.ecg",
+                        title: "TITLE"
+                    ){
+                        HStack {
+                            TextField("Title", text: $calendarState.title)
+                                .font(.system(size: 20, weight: .thin, design: .rounded))
+                                .contentTransition(.numericText())
+                                .disabled(activeMode != .title)
                             
-                    }
-                }
-                .onTapGesture {
-                    setActive(.title)
-                    // Optional: Tap while active toggles the sub-unit
-                    if activeMode == .title {
-                        feedback.impactOccurred()
-                    }
-                }
-                
-                // --- SECTION 1: FREQUENCY ---
-                GlassRow(
-                    isActive: activeMode == .frequency,
-                    icon: "waveform.path.ecg",
-                    title: "FREQUENCY"
-                ) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("\(calendarState.occurrences)")
-                            .font(.system(size: 44, weight: .thin, design: .rounded))
-                            .contentTransition(.numericText())
-                        
-                        Text(calendarState.isMonthly ? "/ month" : "/ week")
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .onTapGesture {
-                    setActive(.frequency)
-                    // Optional: Tap while active toggles the sub-unit
-                    if activeMode == .frequency {
-                        withAnimation { calendarState.isMonthly.toggle() }
-                        feedback.impactOccurred()
-                    }
-                }
-
-                // --- SECTION 2: MONTH ---
-                GlassRow(
-                    isActive: activeMode == .month,
-                    icon: "calendar",
-                    title: "MONTH"
-                ) {
-                    Text(Calendar.current.monthSymbols[calendarState.selectedMonth - 1])
-                        .font(.system(size: 34, weight: .light))
-                        .contentTransition(.numericText())
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .onTapGesture { setActive(.month) }
-
-                // --- SECTION 3: DAY & DURATION ---
-                GlassRow(
-                    isActive: activeMode == .dayDuration,
-                    icon: "clock",
-                    title: "DAY & DURATION"
-                ) {
-                    HStack {
-                        Text("Day \(calendarState.selectedDay)")
-                            .font(.title)
-                            .fontWeight(.medium)
-                            .contentTransition(.numericText())
-                        
-                        Spacer()
-                        
-                        Text("\(calendarState.hours) hr")
-                            .font(.title)
-                            .foregroundStyle(.secondary)
-                            .contentTransition(.numericText())
-                    }
-                }
-                .onTapGesture {
-                    setActive(.dayDuration)
-                    // Optional: Tap while active toggles editing duration vs day?
-                    // For now, let's keep swipe for Day, and maybe auto-cycle duration on tap?
-                    if activeMode == .dayDuration {
-                        withAnimation {
-                            calendarState.hours = (calendarState.hours % 12) + 1
                         }
-                        feedback.impactOccurred()
                     }
-                }
-                
-                GlassRow(
-                    isActive: activeMode == .description,
-                    icon: "waveform.path.ecg",
-                    title: "DESCRIPTION"
-                ){
-                    HStack {
-                        TextField("Description", text: $calendarState.description)
+                    .onTapGesture {
+                        setActive(.title)
+                        // Optional: Tap while active toggles the sub-unit
+                        if activeMode == .title {
+                            feedback.impactOccurred()
+                        }
+                    }                    
+                    // --- SECTION 1: FREQUENCY ---
+                    GlassRow(
+                        isActive: activeMode == .frequency,
+                        icon: "waveform.path.ecg",
+                        title: "FREQUENCY"
+                    ) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("\(calendarState.occurrences)")
+                                .font(.system(size: 44, weight: .thin, design: .rounded))
+                                .contentTransition(.numericText())
+                            
+                            Text(calendarState.isMonthly ? "/ month" : "/ week")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .onTapGesture {
+                        setActive(.frequency)
+                        // Optional: Tap while active toggles the sub-unit
+                        if activeMode == .frequency {
+                            withAnimation { calendarState.isMonthly.toggle() }
+                            feedback.impactOccurred()
+                        }
+                    }
+                    
+                    // --- SECTION 2: MONTH ---
+                    GlassRow(
+                        isActive: activeMode == .month,
+                        icon: "calendar",
+                        title: "MONTH"
+                    ) {
+                        Text(Calendar.current.monthSymbols[calendarState.selectedMonth - 1])
+                            .font(.system(size: 34, weight: .light))
                             .contentTransition(.numericText())
-                            .disabled(activeMode != .description)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                }
-                .onTapGesture {
-                    setActive(.description)
-                    // Optional: Tap while active toggles the sub-unit
-                    if activeMode == .description {
-                        feedback.impactOccurred()
+                    .onTapGesture { setActive(.month) }
+                    
+                    // --- SECTION 3: DAY & DURATION ---
+                    GlassRow(
+                        isActive: activeMode == .dayDuration,
+                        icon: "clock",
+                        title: "DAY & DURATION"
+                    ) {
+                        HStack {
+                            Text("Day \(calendarState.selectedDay)")
+                                .font(.title)
+                                .fontWeight(.medium)
+                                .contentTransition(.numericText())
+                            
+                            Spacer()
+                            
+                            Text("\(calendarState.hours) hr")
+                                .font(.title)
+                                .foregroundStyle(.secondary)
+                                .contentTransition(.numericText())
+                        }
                     }
-                }
-                
-                
-                // Instructional Footer
-                Text("Tap a card to select • Swipe horizontally to adjust")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.2))
-                    .padding(.bottom, 20)
+                    .onTapGesture {
+                        setActive(.dayDuration)
+                        // Optional: Tap while active toggles editing duration vs day?
+                        // For now, let's keep swipe for Day, and maybe auto-cycle duration on tap?
+                        if activeMode == .dayDuration {
+                            withAnimation {
+                                calendarState.hours = (calendarState.hours % 12) + 1
+                            }
+                            feedback.impactOccurred()
+                        }
+                    }
+                    
+                    GlassRow(
+                        isActive: activeMode == .description,
+                        icon: "waveform.path.ecg",
+                        title: "DESCRIPTION"
+                    ){
+                        HStack {
+                            TextField("Description", text: $calendarState.description)
+                                .contentTransition(.numericText())
+                                .disabled(activeMode != .description)
+                        }
+                    }
+                    .onTapGesture {
+                        setActive(.description)
+                        // Optional: Tap while active toggles the sub-unit
+                        if activeMode == .description {
+                            feedback.impactOccurred()
+                        }
+                    }
+                    
+                    
+                    // Instructional Footer
+                    Text("Tap a card to select • Swipe horizontally to adjust")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.2))
+                        .padding(.bottom, 20)
+                }.frame(maxWidth: .infinity)
+                    .ignoresSafeArea()
             }
             .padding(.horizontal, 15)
         }

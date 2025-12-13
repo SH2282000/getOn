@@ -13,21 +13,30 @@ struct LiquidBackground: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.1, green: 0.1, blue: 0.2)
+            Color.blue.opacity(0.8)
             
             GeometryReader { proxy in
                 ZStack {
-                    Circle()
-                        .fill(Color.blue.opacity(0.4))
-                        .frame(width: 300, height: 300)
-                        .blur(radius: 60)
-                        .offset(x: animate ? -100 : 100, y: animate ? -100 : 100)
-                    
-                    Circle()
-                        .fill(Color.purple.opacity(0.4))
-                        .frame(width: 300, height: 300)
-                        .blur(radius: 60)
-                        .offset(x: animate ? 100 : -100, y: animate ? 100 : -100)
+                    ForEach(0..<9) { i in
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    gradient: Gradient(colors: [
+                                        [Color.cyan, .purple, .cyan, .blue, .white.opacity(0.2), .purple, .cyan, .blue, .cyan][i],
+                                        [Color.cyan, .purple, .cyan, .blue, .white.opacity(0.2), .purple, .cyan, .blue, .cyan][i].opacity(1),
+                                        .clear
+                                    ]),
+                                    center: .center,
+                                    startRadius: 0,
+                                    endRadius: 150
+                                )
+                            )
+                            .frame(width: 300, height: 300)
+                            .blur(radius: 60)
+                            .offset(x: animate ? CGFloat.random(in: -150...150) : CGFloat.random(in: -300...300),
+                                    y: animate ? CGFloat.random(in: -150...150) : CGFloat.random(in: -300...300))
+                            .animation(.easeInOut(duration: 5 + Double(i) * 0.5).repeatForever(autoreverses: true), value: animate)
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -41,5 +50,8 @@ struct LiquidBackground: View {
 }
 
 #Preview {
-    LiquidBackground()
+    @Previewable @State var calendarState: CalendarViewState = .init()
+    
+    SwipeCalendarView(calendarState: .constant(calendarState))
+        .environmentObject(AuthenticationManager())
 }
