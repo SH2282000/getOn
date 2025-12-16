@@ -1,20 +1,11 @@
 import SwiftUI
 
-// MARK: - Interaction Models
-enum EditMode: CaseIterable {
-    case title
-    case frequency
-    case month
-    case dayDuration
-    case description
-}
-
 struct SwipeCalendarView: View {
     @EnvironmentObject var authManager: AuthenticationManager
     @Binding var calendarState: CalendarViewState
 
     // Interaction State
-    @State private var activeMode: EditMode = .frequency
+    @State private var activeMode: CalendarEditMode = .frequency
     @State private var dragOffset: CGFloat = 0
     @State private var lastDragValue: CGFloat = 0
 
@@ -128,7 +119,7 @@ struct SwipeCalendarView: View {
 
     // MARK: - Logic Helper
 
-    private func setActive(_ mode: EditMode) {
+    private func setActive(_ mode: CalendarEditMode) {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
             activeMode = mode
         }
@@ -144,18 +135,16 @@ struct SwipeCalendarView: View {
                 if newValue >= 1 && newValue <= 30 {
                     calendarState.occurrences = newValue
                 }
-            case .month:
-                let newValue = calendarState.selectedMonth + step
-                if newValue >= 1 && newValue <= 12 {
-                    calendarState.selectedMonth = newValue
-                }
-            case .dayDuration:
-                // Adjust Day
+            case .monthDay:
                 let daysInMonth = rangeForMonth(month: calendarState.selectedMonth)
                 let newValue = calendarState.selectedDay + step
                 if newValue >= 1 && newValue <= daysInMonth {
                     calendarState.selectedDay = newValue
                 }
+            case .timeDuration:
+                // Adjust time
+                break
+
             default:
                 break
             }
