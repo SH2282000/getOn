@@ -136,14 +136,15 @@ struct SwipeCalendarView: View {
                     calendarState.occurrences = newValue
                 }
             case .monthDay:
-                let daysInMonth = rangeForMonth(month: calendarState.selectedMonth)
-                let newValue = calendarState.selectedDay + step
+                let daysInMonth = rangeForMonth(month: calendarState.startMonth)
+                let newValue = calendarState.startDay + step
                 if newValue >= 1 && newValue <= daysInMonth {
-                    calendarState.selectedDay = newValue
+                    calendarState.startDay = newValue
                 }
             case .timeDuration:
-                // Adjust time
-                break
+                // Adjust time by 15 minutes
+                let interval = TimeInterval(step * 15 * 60)
+                calendarState.startTime = calendarState.startTime.addingTimeInterval(interval)
 
             default:
                 break

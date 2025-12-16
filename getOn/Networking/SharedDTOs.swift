@@ -18,9 +18,10 @@ struct CalendarViewStateDTO: Codable {
     var occurrences: Int
     var isMonthly: Bool
     var description: String
-    var selectedMonth: Int
-    var selectedDay: Int
-    var hours: Int
+    var startMonth: Int
+    var startDay: Int
+    var startTime: Date
+    var duration: Int
     var savedShapes: [SavedMapShapeDTO]
 }
 

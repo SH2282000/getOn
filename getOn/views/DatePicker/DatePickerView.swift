@@ -14,7 +14,7 @@ struct DatePickerView: View {
     var setActive: (CalendarEditMode) -> Void
     
     var body: some View {
-        // --- SECTION 1: FREQUENCY ---
+        // --- SECTION 1: FREQUENCY ---∏
         VStack(spacing: 16) {
             ExpandableGlassRow(
                 isActive: activeMode == .frequency,
@@ -47,11 +47,11 @@ struct DatePickerView: View {
                     setActive(.monthDay)
                     if activeMode == .monthDay {
                         withAnimation {
-                            let newValue = calendarState.selectedMonth + 1
+                            let newValue = calendarState.startMonth + 1
                             if newValue >= 1 && newValue <= 12 {
-                                calendarState.selectedMonth = newValue
+                                calendarState.startMonth = newValue
                             } else {
-                                calendarState.selectedMonth = 1
+                                calendarState.startMonth = 1
                             }
                         }
                         feedback.impactOccurred()
@@ -59,14 +59,14 @@ struct DatePickerView: View {
                 }
             ) {
                 HStack {
-                    Text("Day \(calendarState.selectedDay)")
+                    Text("Day \(calendarState.startDay)")
                         .font(.title)
                         .fontWeight(.medium)
                         .contentTransition(.numericText())
                     
                     Spacer()
                     
-                    Text(Calendar.current.monthSymbols[calendarState.selectedMonth - 1])
+                    Text(Calendar.current.monthSymbols[calendarState.startMonth - 1])
                         .font(.title)
                         .foregroundStyle(.secondary)
                         .contentTransition(.numericText())
@@ -77,25 +77,27 @@ struct DatePickerView: View {
                 isActive: activeMode == .timeDuration,
                 icon: "clock",
                 title: "TIME & DURATION",
-                onTap: {
+                 onTap: {
                     setActive(.timeDuration)
                     if activeMode == .timeDuration {
                         withAnimation {
-                            calendarState.hours = (calendarState.hours % 12) + 1
+                            // Cycle duration 1..7
+                            let newDuration = calendarState.duration + 1
+                            calendarState.duration = newDuration > 7 ? 1 : newDuration
                         }
                         feedback.impactOccurred()
                     }
                 }
             ) {
                 HStack {
-                    Text("\(calendarState.hours) : 00")
+                    Text(calendarState.startTime.formatted(date: .omitted, time: .shortened)) // Will respect locale usually, but let's try to trust system or use formatter if needed 24h
                         .font(.title)
                         .fontWeight(.medium)
                         .contentTransition(.numericText())
                     
                     Spacer()
                     
-                    Text("\(calendarState.hours) hr")
+                    Text("\(calendarState.duration) hr")
                         .font(.title)
                         .foregroundStyle(.secondary)
                         .contentTransition(.numericText())

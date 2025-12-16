@@ -5,7 +5,6 @@
 //  Created by Shannah on 30/11/2025.
 //
 
-
 import SwiftUI
 import MapKit
 
@@ -18,18 +17,26 @@ struct CalendarViewState: Identifiable {
     var occurrences: Int = 3
     var isMonthly: Bool = false
     var description: String = ""
-    var selectedMonth: Int = Calendar.current.component(.month, from: Date())
-    var selectedDay: Int = Calendar.current.component(.day, from: Date())
-    var hours: Int = 2
+    var startMonth: Int = Calendar.current.component(.month, from: Date())
+    var startDay: Int = Calendar.current.component(.day, from: Date())
+    var startTime: Date = {
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        components.hour = 14
+        components.minute = 0
+        return Calendar.current.date(from: components) ?? Date()
+    }()
+    var duration: Int = 2
     var date: Date {
         let calendar = Calendar.current
         let currentYear = calendar.component(.year, from: Date())
+        let hour = calendar.component(.hour, from: startTime)
+        let minute = calendar.component(.minute, from: startTime)
         var components = DateComponents()
         components.year = currentYear
-        components.month = selectedMonth
-        components.day = selectedDay
-        components.hour = hours
-        components.minute = 0
+        components.month = startMonth
+        components.day = startDay
+        components.hour = hour
+        components.minute = minute
         return calendar.date(from: components) ?? Date()
     }
     var savedShapes: [SavedMapShape] = []
@@ -45,9 +52,10 @@ extension CalendarViewState {
             occurrences: occurrences,
             isMonthly: isMonthly,
             description: description,
-            selectedMonth: selectedMonth,
-            selectedDay: selectedDay,
-            hours: hours,
+            startMonth: startMonth,
+            startDay: startDay,
+            startTime: startTime,
+            duration: duration,
             savedShapes: savedShapes.map { $0.toDTO() }
         )
     }
@@ -60,9 +68,10 @@ extension CalendarViewState {
         self.occurrences = dto.occurrences
         self.isMonthly = dto.isMonthly
         self.description = dto.description
-        self.selectedMonth = dto.selectedMonth
-        self.selectedDay = dto.selectedDay
-        self.hours = dto.hours
+        self.startMonth = dto.startMonth
+        self.startDay = dto.startDay
+        self.startTime = dto.startTime
+        self.duration = dto.duration
         self.savedShapes = dto.savedShapes.map { SavedMapShape(from: $0) }
     }
 }
