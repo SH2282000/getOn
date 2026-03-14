@@ -31,8 +31,9 @@ jobs:
 
             cd ~/getOn/Server
 
-            # Pull the latest code from the repository
-            git pull origin main
+            # Pull the latest code from the repository, regardless of conflicts
+            git fetch origin main
+            git reset --hard origin/main
 
             # Update dependencies and build the Vapor server code in release mode
             swift package update
