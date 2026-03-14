@@ -1,0 +1,31 @@
+name: Deploy Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy and Restart Server
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ~/getOn/Server
+
+            # Pull the latest code from the repository
+            git pull origin main
+
+            # Update dependencies and build the Vapor server code in release mode
+            swift package update
+            swift build -c release
+
+            # Restart the Systemd service
+            systemctl restart geton
+            echo "Server successfully restarted!"
