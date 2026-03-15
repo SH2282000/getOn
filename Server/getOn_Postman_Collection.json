@@ -1,0 +1,93 @@
+{
+	"info": {
+		"_postman_id": "a287bfcc-0aa2-45af-8686-21a505b22fd1",
+		"name": "getOn Server API",
+		"description": "API collection for the getOn Vapor server.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Returns 'It works!'"
+			},
+			"response": []
+		},
+		{
+			"name": "Calendar",
+			"item": [
+				{
+					"name": "Save Calendar States",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"states\": [\n        {\n            \"uuid\": \"123e4567-e89b-12d3-a456-426614174000\",\n            \"title\": \"Example Event\",\n            \"colorHex\": \"#FF5733\",\n            \"isExpanded\": false,\n            \"occurrences\": 1,\n            \"isMonthly\": true,\n            \"description\": \"A sample description\",\n            \"selectedMonth\": 3,\n            \"selectedDay\": 15,\n            \"hours\": 2,\n            \"savedShapes\": [\n                {\n                    \"id\": \"987e6543-e21b-12d3-a456-426614174000\",\n                    \"coordinates\": [\n                        {\n                            \"latitude\": 40.7128,\n                            \"longitude\": -74.0060\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/calendar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calendar"
+							]
+						},
+						"description": "Save or update calendar states for a user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Calendar States",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/calendar/:username",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"calendar",
+								":username"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "testuser",
+									"description": "The specific user you want to fetch calendar data for"
+								}
+							]
+						},
+						"description": "Get calendar states for a given username."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8080",
+			"type": "string"
+		}
+	]
+}
