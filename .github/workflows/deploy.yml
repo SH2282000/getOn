@@ -40,6 +40,7 @@ jobs:
             swift build -c release || { echo "❌ Swift build failed"; exit 1; }
 
             # Restart the Systemd service
+            # systemctl reload nginx || { echo "❌ Failed to reload nginx"; exit 1; }
             systemctl restart geton || { echo "❌ Failed to restart geton service"; exit 1; }
 
             # Wait a few seconds to ensure it didn't crash immediately on startup

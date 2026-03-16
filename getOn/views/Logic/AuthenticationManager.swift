@@ -55,7 +55,7 @@ class AuthenticationManager: NSObject, ObservableObject,
 
     // MARK: - Public API
 
-    /// Single entry point: tries assertion first, falls back to registration.
+    /// Single entry point: passes both assertion and registration to allow sign in or account creation.
     func signIn() {
         Task {
             do {
@@ -63,14 +63,20 @@ class AuthenticationManager: NSObject, ObservableObject,
                 pendingChallenge = resp.challenge
                 pendingUserID = resp.userID
 
-                guard let challengeData = Data(base64URLEncoded: resp.challenge) else { return }
+                guard let challengeData = Data(base64URLEncoded: resp.challenge),
+                      let userIDData = resp.userID.data(using: .utf8) else { return }
 
                 let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(
                     relyingPartyIdentifier: Self.relyingParty
                 )
                 let assertion = provider.createCredentialAssertionRequest(challenge: challengeData)
+                let registration = provider.createCredentialRegistrationRequest(
+                    challenge: challengeData,
+                    name: "getOn Account",
+                    userID: userIDData
+                )
 
-                let controller = ASAuthorizationController(authorizationRequests: [assertion])
+                let controller = ASAuthorizationController(authorizationRequests: [assertion, registration])
                 controller.delegate = self
                 controller.presentationContextProvider = self
                 await MainActor.run { controller.performRequests() }
@@ -135,10 +141,7 @@ class AuthenticationManager: NSObject, ObservableObject,
             case .canceled:
                 print("[Auth] User canceled")
             default:
-                print("[Auth] Assertion failed (\(asError.code.rawValue)), trying registration…")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.register()
-                }
+                print("[Auth] Auth failed (\(asError.code.rawValue))")
             }
         } else {
             print("[Auth] Error: \(error.localizedDescription)")
@@ -216,7 +219,7 @@ class AuthenticationManager: NSObject, ObservableObject,
         
         if http.statusCode != 200 {
             let bodyStr = String(data: data, encoding: .utf8) ?? ""
-            print("[Auth] GET /challenge failed with status \(http.statusCode). Body: \(bodyStr)")
+            print("[Auth] GET \(url) failed with status \(http.statusCode). Body: \(bodyStr)")
             throw URLError(URLError.Code(rawValue: http.statusCode)) // Throw the actual status code for easier debugging
         }
         
@@ -237,7 +240,7 @@ class AuthenticationManager: NSObject, ObservableObject,
         
         if http.statusCode != 200 {
             let bodyStr = String(data: data, encoding: .utf8) ?? ""
-            print("[Auth] POST \(path) failed with status \(http.statusCode). Body: \(bodyStr)")
+            print("[Auth] POST \(url) failed with status \(http.statusCode). Body: \(bodyStr)")
             throw URLError(URLError.Code(rawValue: http.statusCode)) // Throw the actual status code
         }
         
