@@ -36,9 +36,18 @@ jobs:
             git reset --hard origin/main
 
             # Update dependencies and build the Vapor server code in release mode
-            swift package update
-            swift build -c release
+            swift package update || { echo "❌ Swift package update failed"; exit 1; }
+            swift build -c release || { echo "❌ Swift build failed"; exit 1; }
 
             # Restart the Systemd service
-            systemctl restart geton
-            echo "Server successfully restarted!"
+            systemctl restart geton || { echo "❌ Failed to restart geton service"; exit 1; }
+
+            # Wait a few seconds to ensure it didn't crash immediately on startup
+            sleep 3
+            systemctl is-active --quiet geton || {
+              echo "❌ Service crashed after restart! Status:"
+              systemctl status geton --no-pager
+              exit 1
+            }
+
+            echo "✅ Server successfully restarted and is running!"

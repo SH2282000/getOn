@@ -50,6 +50,7 @@ struct PasskeyController: RouteCollection {
     // MARK: GET /passkey/challenge
 
     func getChallenge(req: Request) async throws -> ChallengeResponse {
+        req.logger.info("🟢 GET /passkey/challenge reached")
         var generator = SystemRandomNumberGenerator()
         var bytes = [UInt8](repeating: 0, count: 32)
         for i in 0..<32 {
@@ -67,12 +68,14 @@ struct PasskeyController: RouteCollection {
         pending[challenge] = now.addingTimeInterval(300)
         req.application.storage[PendingChallengesKey.self] = pending
 
+        req.logger.info("🟢 GET /passkey/challenge successful. Returning challenge for temporary userID: \(userID)")
         return ChallengeResponse(challenge: challenge, userID: userID)
     }
 
     // MARK: POST /passkey/register
 
     func register(req: Request) async throws -> AuthResponse {
+        req.logger.info("🟢 POST /passkey/register reached")
         let input = try req.content.decode(RegisterRequest.self)
 
         // Validate challenge
@@ -86,12 +89,14 @@ struct PasskeyController: RouteCollection {
         )
         try await credential.save(on: req.db)
 
+        req.logger.info("🟢 POST /passkey/register successful. Registered new passkey for userID: \(input.userID)")
         return AuthResponse(userID: input.userID, username: input.username)
     }
 
     // MARK: POST /passkey/authenticate
 
     func authenticate(req: Request) async throws -> AuthResponse {
+        req.logger.info("🟢 POST /passkey/authenticate reached")
         let input = try req.content.decode(AuthenticateRequest.self)
 
         // Validate challenge
@@ -132,6 +137,7 @@ struct PasskeyController: RouteCollection {
             throw Abort(.unauthorized, reason: "Invalid signature")
         }
 
+        req.logger.info("🟢 POST /passkey/authenticate successful. User authenticated: \(credential.userID)")
         return AuthResponse(userID: credential.userID, username: credential.username)
     }
 
