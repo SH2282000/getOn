@@ -210,9 +210,16 @@ class AuthenticationManager: NSObject, ObservableObject,
     private func fetchChallenge() async throws -> ChallengeResponse {
         let url = URL(string: "\(Self.baseURL)/challenge")!
         let (data, resp) = try await URLSession.shared.data(from: url)
-        guard let http = resp as? HTTPURLResponse, http.statusCode == 200 else {
+        guard let http = resp as? HTTPURLResponse else {
             throw URLError(.badServerResponse)
         }
+        
+        if http.statusCode != 200 {
+            let bodyStr = String(data: data, encoding: .utf8) ?? ""
+            print("[Auth] GET /challenge failed with status \(http.statusCode). Body: \(bodyStr)")
+            throw URLError(URLError.Code(rawValue: http.statusCode)) // Throw the actual status code for easier debugging
+        }
+        
         return try JSONDecoder().decode(ChallengeResponse.self, from: data)
     }
 
@@ -224,11 +231,16 @@ class AuthenticationManager: NSObject, ObservableObject,
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, resp) = try await URLSession.shared.data(for: request)
-        guard let http = resp as? HTTPURLResponse, http.statusCode == 200 else {
-            let bodyStr = String(data: data, encoding: .utf8) ?? ""
-            print("[Auth] Server error: \(bodyStr)")
+        guard let http = resp as? HTTPURLResponse else {
             throw URLError(.badServerResponse)
         }
+        
+        if http.statusCode != 200 {
+            let bodyStr = String(data: data, encoding: .utf8) ?? ""
+            print("[Auth] POST \(path) failed with status \(http.statusCode). Body: \(bodyStr)")
+            throw URLError(URLError.Code(rawValue: http.statusCode)) // Throw the actual status code
+        }
+        
         return try JSONDecoder().decode(T.self, from: data)
     }
 
