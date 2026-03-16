@@ -50,9 +50,11 @@ struct PasskeyController: RouteCollection {
     // MARK: GET /passkey/challenge
 
     func getChallenge(req: Request) async throws -> ChallengeResponse {
+        var generator = SystemRandomNumberGenerator()
         var bytes = [UInt8](repeating: 0, count: 32)
-        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-        guard status == errSecSuccess else { throw Abort(.internalServerError, reason: "RNG failure") }
+        for i in 0..<32 {
+            bytes[i] = generator.next()
+        }
 
         let challenge = Data(bytes).base64URLEncodedString()
         let userID = UUID().uuidString
@@ -153,8 +155,8 @@ struct PasskeyController: RouteCollection {
     private func parseES256PublicKey(from data: Data) throws -> P256.Signing.PublicKey {
         // Try uncompressed point first (65 bytes: 0x04 + 32 + 32)
         if data.count == 65 && data[data.startIndex] == 0x04 {
-            let x = data[data.index(data.startIndex, offsetBy: 1)..<data.index(data.startIndex, offsetBy: 33)]
-            let y = data[data.index(data.startIndex, offsetBy: 33)..<data.index(data.startIndex, offsetBy: 65)]
+            // let x = data[data.index(data.startIndex, offsetBy: 1)..<data.index(data.startIndex, offsetBy: 33)]
+            // let y = data[data.index(data.startIndex, offsetBy: 33)..<data.index(data.startIndex, offsetBy: 65)]
             return try P256.Signing.PublicKey(x963Representation: data)
         }
 

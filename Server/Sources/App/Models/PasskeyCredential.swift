@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class PasskeyCredential: Model, Content {
+final class PasskeyCredential: Model, Content, @unchecked Sendable {
     static let schema = "passkey_credentials"
 
     @ID(key: .id)

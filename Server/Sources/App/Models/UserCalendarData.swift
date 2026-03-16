@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class UserCalendarData: Model, Content {
+final class UserCalendarData: Model, Content, @unchecked Sendable {
     static let schema = "user_calendar_data"
 
     @ID(key: .id)
