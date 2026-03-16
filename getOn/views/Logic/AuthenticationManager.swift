@@ -42,6 +42,7 @@ class AuthenticationManager: NSObject, ObservableObject,
     // Transient state for the in-flight ceremony
     private var pendingChallenge: String?
     private var pendingUserID: String?
+    private var isAttemptingAssertion = false  // tracks whether we're in the silent assertion phase
 
     // MARK: - Presentation Anchor
 
@@ -55,7 +56,8 @@ class AuthenticationManager: NSObject, ObservableObject,
 
     // MARK: - Public API
 
-    /// Single entry point: passes both assertion and registration to allow sign in or account creation.
+    /// Single entry point: silently checks for an existing passkey first,
+    /// then falls back to creating a new passkey if none exists.
     func signIn() {
         Task {
             do {
@@ -63,23 +65,25 @@ class AuthenticationManager: NSObject, ObservableObject,
                 pendingChallenge = resp.challenge
                 pendingUserID = resp.userID
 
-                guard let challengeData = Data(base64URLEncoded: resp.challenge),
-                      let userIDData = resp.userID.data(using: .utf8) else { return }
+                guard let challengeData = Data(base64URLEncoded: resp.challenge) else { return }
 
                 let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(
                     relyingPartyIdentifier: Self.relyingParty
                 )
                 let assertion = provider.createCredentialAssertionRequest(challenge: challengeData)
-                let registration = provider.createCredentialRegistrationRequest(
-                    challenge: challengeData,
-                    name: "getOn Account",
-                    userID: userIDData
-                )
 
-                let controller = ASAuthorizationController(authorizationRequests: [assertion, registration])
+                let controller = ASAuthorizationController(authorizationRequests: [assertion])
                 controller.delegate = self
                 controller.presentationContextProvider = self
-                await MainActor.run { controller.performRequests() }
+
+                isAttemptingAssertion = true
+
+                // preferImmediatelyAvailableCredentials makes iOS fail silently
+                // (with .canceled) if no passkey exists, instead of showing the
+                // confusing "no passwords saved" popup.
+                await MainActor.run {
+                    controller.performRequests(options: .preferImmediatelyAvailableCredentials)
+                }
             } catch {
                 print("[Auth] signIn error: \(error)")
             }
@@ -97,6 +101,7 @@ class AuthenticationManager: NSObject, ObservableObject,
     private func register() {
         Task {
             do {
+                // Fetch a fresh challenge for the registration ceremony
                 let resp = try await fetchChallenge()
                 pendingChallenge = resp.challenge
                 pendingUserID = resp.userID
@@ -116,6 +121,9 @@ class AuthenticationManager: NSObject, ObservableObject,
                 let controller = ASAuthorizationController(authorizationRequests: [registration])
                 controller.delegate = self
                 controller.presentationContextProvider = self
+
+                isAttemptingAssertion = false
+
                 await MainActor.run { controller.performRequests() }
             } catch {
                 print("[Auth] register error: \(error)")
@@ -127,6 +135,7 @@ class AuthenticationManager: NSObject, ObservableObject,
 
     func authorizationController(controller: ASAuthorizationController,
                                  didCompleteWithAuthorization authorization: ASAuthorization) {
+        isAttemptingAssertion = false
         if let cred = authorization.credential as? ASAuthorizationPlatformPublicKeyCredentialRegistration {
             handleRegistration(cred)
         } else if let cred = authorization.credential as? ASAuthorizationPlatformPublicKeyCredentialAssertion {
@@ -139,11 +148,20 @@ class AuthenticationManager: NSObject, ObservableObject,
         if let asError = error as? ASAuthorizationError {
             switch asError.code {
             case .canceled:
-                print("[Auth] User canceled")
+                if isAttemptingAssertion {
+                    // Silent assertion found no existing passkey → create one
+                    print("[Auth] No existing passkey found, starting registration…")
+                    isAttemptingAssertion = false
+                    register()
+                } else {
+                    print("[Auth] User canceled")
+                }
             default:
+                isAttemptingAssertion = false
                 print("[Auth] Auth failed (\(asError.code.rawValue))")
             }
         } else {
+            isAttemptingAssertion = false
             print("[Auth] Error: \(error.localizedDescription)")
         }
     }
