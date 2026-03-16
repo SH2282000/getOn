@@ -33,7 +33,7 @@ struct SwipeCalendarView: View {
                             withAnimation { calendarState.isExpanded = false }
                             Task {
                                 try? await APIManager.shared.saveCalendarStates(
-                                    username: authManager.username, states: [calendarState])
+                                    username: authManager.userId ?? "", states: [calendarState])
                             }
                         }
                 }

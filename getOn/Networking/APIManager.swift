@@ -2,7 +2,7 @@ import Foundation
 
 class APIManager {
     static let shared = APIManager()
-    private let baseURL = "http://192.168.10.35:8081/calendar"
+    private let baseURL = "https://87-106-60-114.nip.io/geton/calendar"
     
     func saveCalendarStates(username: String, states: [CalendarViewState]) async throws {
         let dtos = states.map { $0.toDTO() }

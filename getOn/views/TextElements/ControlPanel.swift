@@ -91,7 +91,7 @@ struct ControlPanel: View {
     
     ControlPanel(
         calendarState: .constant(calendarState),
-        title: .constant("Ma"),
+        title: .constant("Test"),
         isExpanded: .constant(false),
         isDrawing: .constant(false),
         shapeCount: 3,

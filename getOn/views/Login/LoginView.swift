@@ -14,7 +14,6 @@ struct LoginView: View {
     
     var body: some View {
         ZStack {
-            // Background
             Color(UIColor.systemBackground)
                 .ignoresSafeArea()
             
@@ -22,7 +21,6 @@ struct LoginView: View {
                 
                 Spacer()
                 
-                // Logo / Title
                 VStack(spacing: 10) {
                     Image(systemName: "livephoto")
                         .resizable()
@@ -32,7 +30,6 @@ struct LoginView: View {
                     
                     Text("getOn")
                         .font(.system(size: 40, weight: .bold, design: .rounded))
-                    
                     
                     RotatingTextView(
                         prefix: "Discover",
@@ -44,59 +41,35 @@ struct LoginView: View {
                 }
                 .padding(.bottom, 40)
                 
-                // Sign in Buttons
                 VStack(spacing: 16) {
-                    // Apple Sign In
                     if !authManager.isAuthenticated {
-                        SignInWithAppleButton(
-                            onRequest: { request in
-                                request.requestedScopes = [.fullName, .email]
-                            },
-                            onCompletion: { result in
-                                switch result {
-                                case .success(let authResults):
-                                    print("Authorization successful: \(authResults)")
-                                    authManager.signInWithApple()
-                                case .failure(let error):
-                                    print("Authorization failed: \(error.localizedDescription)")
-                                }
+                        Button(action: {
+                            authManager.signIn()
+                        }) {
+                            HStack {
+                                Image(systemName: "person.badge.key")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
+                                Text("Continue")
+                                    .font(.system(size: 19, weight: .medium))
                             }
-                        )
-                        .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-                        .frame(height: 50)
-                        .cornerRadius(20)
-                    
-                    
-                    // Google Sign In (Custom Button)
-                    Button(action: {
-                        authManager.signInWithGoogle()
-                    }) {
-                        HStack {
-                            Image(systemName: "g.circle.fill") // Placeholder for Google Logo
-                                .resizable()
-                                .frame(width: 20, height: 20)
-                            Text("Sign in with Bobole")
-                                .font(.system(size: 19, weight: .medium))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color(UIColor.secondarySystemBackground))
+                            .foregroundColor(.primary)
+                            .cornerRadius(20)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                            )
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .foregroundColor(.primary)
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                        )
                     }
-                    }
-                    TextField("Username", text: $authManager.username).padding().glassEffect()
                 }
                 .padding(.horizontal, 30)
                 
-                
                 Spacer()
                 
-                // Footer
                 Text("By continuing, you agree that you are European and do not give your data to the US.")
                     .font(.caption2)
                     .foregroundColor(.secondary)

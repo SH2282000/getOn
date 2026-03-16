@@ -31,7 +31,7 @@ struct NavigationView: View {
                 }
             
             Spacer()
-            PlaceholderView(title: Tabs.settings.title, icon: Tabs.settings.rawValue) // TODO: move the profile part to settings
+            SettingsView()
                 .tag(Tabs.settings)
                 .tabItem {
                     Image(systemName: Tabs.settings.rawValue)
