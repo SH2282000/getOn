@@ -6,7 +6,6 @@ func routes(_ app: Application) throws {
         "It just works!"
     }
 
-    let geton = app.grouped("geton")
-    try geton.register(collection: CalendarController())
-    try geton.register(collection: PasskeyController())
+    try app.register(collection: CalendarController())
+    try app.register(collection: PasskeyController())
 }
