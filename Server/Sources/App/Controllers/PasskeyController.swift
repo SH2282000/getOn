@@ -123,12 +123,19 @@ struct PasskeyController: RouteCollection {
             throw Abort(.badRequest, reason: "Invalid base64url fields")
         }
 
+        // Parse the stored COSE public key — if corrupted, delete and ask client to re-register
+        let pubKey: P256.Signing.PublicKey
+        do {
+            pubKey = try parseES256PublicKey(from: credential.publicKey)
+        } catch {
+            req.logger.warning("🔴 Corrupted credential for user \(userID), deleting. Error: \(error)")
+            try await credential.delete(on: req.db)
+            throw Abort(.conflict, reason: "credential_corrupted")
+        }
+
         let clientDataHash = SHA256.hash(data: clientDataJSON)
         var signedData = authData
         signedData.append(contentsOf: clientDataHash)
-
-        // Parse the stored COSE public key (ES256 / P-256)
-        let pubKey = try parseES256PublicKey(from: credential.publicKey)
 
         // DER signature from authenticator is already in ASN.1 DER
         let signature = try P256.Signing.ECDSASignature(derRepresentation: signatureData)
@@ -200,20 +207,31 @@ struct PasskeyController: RouteCollection {
 
             // Read value
             if keyValue == -2 || keyValue == -3 {
-                // Expecting byte string
+                // Expecting byte string (major type 2)
                 guard i < bytes.count else { break }
                 let valHeader = bytes[i]
+                let valMajor = valHeader >> 5
+                let additional = Int(valHeader & 0x1f)
+                guard valMajor == 2 else { i += 1; continue } // not a byte string
                 let valLen: Int
-                if (valHeader & 0xe0) == 0x40 { // byte string
-                    valLen = Int(valHeader & 0x1f)
+                if additional < 24 {
+                    // Length 0–23 encoded directly in the additional info
+                    valLen = additional
                     i += 1
-                } else if valHeader == 0x58 { // byte string with 1-byte length
+                } else if additional == 24 {
+                    // 1-byte length follows (lengths 24–255)
                     i += 1
                     guard i < bytes.count else { break }
                     valLen = Int(bytes[i])
                     i += 1
+                } else if additional == 25 {
+                    // 2-byte length follows
+                    i += 1
+                    guard i + 2 <= bytes.count else { break }
+                    valLen = Int(bytes[i]) << 8 | Int(bytes[i + 1])
+                    i += 2
                 } else {
-                    // skip unknown
+                    // skip unknown length encoding
                     i += 1
                     continue
                 }

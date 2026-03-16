@@ -220,6 +220,10 @@ class AuthenticationManager: NSObject, ObservableObject,
                     self.username = auth.username
                     self.isAuthenticated = true
                 }
+            } catch let error as URLError where error.code.rawValue == 409 {
+                // Server deleted the corrupted credential → re-register automatically
+                print("[Auth] Server credential corrupted, re-registering…")
+                register()
             } catch {
                 print("[Auth] Authenticate POST error: \(error)")
             }
