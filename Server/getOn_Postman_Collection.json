@@ -39,7 +39,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"testuser\",\n    \"states\": [\n        {\n            \"uuid\": \"123e4567-e89b-12d3-a456-426614174000\",\n            \"title\": \"Example Event\",\n            \"colorHex\": \"#FF5733\",\n            \"isExpanded\": false,\n            \"occurrences\": 1,\n            \"isMonthly\": true,\n            \"description\": \"A sample description\",\n            \"selectedMonth\": 3,\n            \"selectedDay\": 15,\n            \"hours\": 2,\n            \"savedShapes\": [\n                {\n                    \"id\": \"987e6543-e21b-12d3-a456-426614174000\",\n                    \"coordinates\": [\n                        {\n                            \"latitude\": 40.7128,\n                            \"longitude\": -74.0060\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}"
+							"raw": "{\n    \"user_id\": \"testuser\",\n    \"states\": [\n        {\n            \"uuid\": \"123e4567-e89b-12d3-a456-426614174000\",\n            \"title\": \"Example Event\",\n            \"colorHex\": \"#FF5733\",\n            \"isExpanded\": false,\n            \"occurrences\": 1,\n            \"isMonthly\": true,\n            \"description\": \"A sample description\",\n            \"selectedMonth\": 3,\n            \"selectedDay\": 15,\n            \"hours\": 2,\n            \"savedShapes\": [\n                {\n                    \"id\": \"987e6543-e21b-12d3-a456-426614174000\",\n                    \"coordinates\": [\n                        {\n                            \"latitude\": 40.7128,\n                            \"longitude\": -74.0060\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/calendar",
@@ -60,23 +60,23 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/calendar/:username",
+							"raw": "{{base_url}}/calendar/:user_id",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"calendar",
-								":username"
+								":user_id"
 							],
 							"variable": [
 								{
-									"key": "username",
+									"key": "user_id",
 									"value": "testuser",
 									"description": "The specific user you want to fetch calendar data for"
 								}
 							]
 						},
-						"description": "Get calendar states for a given username."
+						"description": "Get calendar states for a given user_id."
 					},
 					"response": []
 				}

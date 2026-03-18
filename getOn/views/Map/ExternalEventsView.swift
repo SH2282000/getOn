@@ -32,7 +32,7 @@ struct ExternalEventsView: View {
         .task {
             // Fetch data when view appears
             do {
-                let fetchedStates = try await APIManager.shared.fetchCalendarStates(username: authManager.userId ?? "")
+                let fetchedStates = try await APIManager.shared.fetchCalendarStates(userID: authManager.userId ?? "")
                 if !fetchedStates.isEmpty {
                     self.calendarStates = fetchedStates
                     if let first = fetchedStates.first {

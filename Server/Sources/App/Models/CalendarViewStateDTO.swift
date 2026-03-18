@@ -25,6 +25,6 @@ struct CalendarViewStateDTO: Codable, Content {
 }
 
 struct UserCalendarRequest: Content {
-    var username: String
+    var userID: String
     var states: [CalendarViewStateDTO]
 }

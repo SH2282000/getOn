@@ -7,17 +7,17 @@ final class UserCalendarData: Model, Content, @unchecked Sendable {
     @ID(key: .id)
     var id: UUID?
 
-    @Field(key: "username")
-    var username: String
+    @Field(key: "user_id")
+    var user_id: String
 
     @Field(key: "data")
     var data: Data // Storing JSON data as blob for simplicity
 
     init() { }
 
-    init(id: UUID? = nil, username: String, data: Data) {
+    init(id: UUID? = nil, user_id: String, data: Data) {
         self.id = id
-        self.username = username
+        self.user_id = user_id
         self.data = data
     }
 }
@@ -26,9 +26,9 @@ struct CreateUserCalendarDataMigration: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
         database.schema("user_calendar_data")
             .id()
-            .field("username", .string, .required)
+            .field("user_id", .string, .required)
             .field("data", .data, .required)
-            .unique(on: "username")
+            .unique(on: "user_id")
             .create()
     }
 

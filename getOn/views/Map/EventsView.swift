@@ -49,7 +49,7 @@ struct EventsView: View {
                     
                     // Trigger an async save to backend
                     Task {
-                        try? await APIManager.shared.saveCalendarStates(username: authManager.userId ?? "", states: calendarStates)
+                        try? await APIManager.shared.saveCalendarStates(userID: authManager.userId ?? "", states: calendarStates)
                     }
                 }
             }
@@ -60,7 +60,7 @@ struct EventsView: View {
             
             // Fetch data when view appears
             do {
-                let fetchedStates = try await APIManager.shared.fetchCalendarStates(username: uid)
+                let fetchedStates = try await APIManager.shared.fetchCalendarStates(userID: uid)
                 if !fetchedStates.isEmpty {
                     self.calendarStates = fetchedStates
                     

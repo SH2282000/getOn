@@ -4,9 +4,9 @@ class APIManager {
     static let shared = APIManager()
     private let baseURL = "https://87-106-60-114.nip.io/geton/calendar"
     
-    func saveCalendarStates(username: String, states: [CalendarViewState]) async throws {
+    func saveCalendarStates(userID: String, states: [CalendarViewState]) async throws {
         let dtos = states.map { $0.toDTO() }
-        let requestBody = UserCalendarRequest(username: username, states: dtos)
+        let requestBody = UserCalendarRequest(userID: userID, states: dtos)
         
         guard let url = URL(string: baseURL) else { return }
         var request = URLRequest(url: url)
@@ -21,8 +21,8 @@ class APIManager {
         }
     }
     
-    func fetchCalendarStates(username: String) async throws -> [CalendarViewState] {
-        guard let url = URL(string: "\(baseURL)/\(username)") else { return [] }
+    func fetchCalendarStates(userID: String) async throws -> [CalendarViewState] {
+        guard let url = URL(string: "\(baseURL)/\(userID)") else { return [] }
         
         let (data, response) = try await URLSession.shared.data(from: url)
         
