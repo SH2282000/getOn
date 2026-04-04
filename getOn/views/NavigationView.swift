@@ -9,31 +9,24 @@ import SwiftUI
 
 struct NavigationView: View {
     @State var activeTab: Tabs = .events
+    @State private var searchText: String = ""
     
     var body: some View {
-        TabView(selection: $activeTab) {
-            EventsView()
-                .tag(Tabs.events)
-                .tabItem {
-                    Image(systemName: "calendar")
-                }
+        TabView {
+            Tab(Tabs.events.title, systemImage: "calendar") {
+                EventsView()
+            }
+            Tab(Tabs.settings.title, systemImage: Tabs.settings.rawValue) {
+                SettingsView()
+            }
             
-            LoginView()
-                .tag(Tabs.offline)
-                .tabItem {
-                    Image(systemName: Tabs.offline.rawValue)
+            Tab(role: .search) {
+                NavigationStack {
+                    EventsView()
+                        .searchable(text: $searchText, prompt: "Search map...")
                 }
-            
-            Spacer()
-            SettingsView()
-                .tag(Tabs.settings)
-                .tabItem {
-                    Image(systemName: Tabs.settings.rawValue)
-                }
+            }
         }
+        .tabBarMinimizeBehavior(.automatic)
     }
-}
-
-#Preview {
-    NavigationView()
 }
