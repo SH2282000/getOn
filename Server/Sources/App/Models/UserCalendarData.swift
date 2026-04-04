@@ -22,9 +22,9 @@ final class UserCalendarData: Model, Content, @unchecked Sendable {
     }
 }
 
-struct CreateUserCalendarDataMigration: Migration {
-    func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("user_calendar_data")
+struct CreateUserCalendarDataMigration: AsyncMigration {
+    func prepare(on database: Database) async throws {
+        try await database.schema("user_calendar_data")
             .id()
             .field("user_id", .string, .required)
             .field("data", .data, .required)
@@ -32,7 +32,7 @@ struct CreateUserCalendarDataMigration: Migration {
             .create()
     }
 
-    func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("user_calendar_data").delete()
+    func revert(on database: Database) async throws {
+        try await database.schema("user_calendar_data").delete()
     }
 }

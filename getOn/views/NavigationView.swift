@@ -18,12 +18,6 @@ struct NavigationView: View {
                     Image(systemName: "calendar")
                 }
             
-            ExternalEventsView()
-                .tag(Tabs.search)
-                .tabItem {
-                    Image(systemName: Tabs.search.rawValue)
-                }
-            
             LoginView()
                 .tag(Tabs.offline)
                 .tabItem {

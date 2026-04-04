@@ -129,24 +129,7 @@ extension MapView {
     
     private func getAnimatedCoordinates(for shape: SavedMapShape) -> [CLLocationCoordinate2D] {
         let progress = shapeAnimations[shape.id] ?? 1.0
-        let coordinates = shape.coordinates.map { $0.toCoreLocation }
-        
-        if progress >= 1.0 {
-            return coordinates
-        }
-        
-        // Calculate centroid
-        let latitudeSum = coordinates.reduce(0) { $0 + $1.latitude }
-        let longitudeSum = coordinates.reduce(0) { $0 + $1.longitude }
-        let count = Double(coordinates.count)
-        let centroid = CLLocationCoordinate2D(latitude: latitudeSum / count, longitude: longitudeSum / count)
-        
-        // Interpolate
-        return coordinates.map { coord in
-            let lat = centroid.latitude + (coord.latitude - centroid.latitude) * progress
-            let lon = centroid.longitude + (coord.longitude - centroid.longitude) * progress
-            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
-        }
+        return MapShapeManager.animatedCoordinates(for: shape, progress: progress)
     }
 
     private func saveCurrentPath() {
@@ -180,21 +163,11 @@ extension MapView {
     }
     
     private func loadShapes() async {
-        do {
-            let data = try Data(contentsOf: shapesFileURL)
-            let shapes = try JSONDecoder().decode([SavedMapShape].self, from: data)
-            await MainActor.run {
-                self.selectedStateBinding.wrappedValue.savedShapes = shapes
-                // Ensure loaded shapes are fully visible
-                for shape in shapes {
-                    self.shapeAnimations[shape.id] = 1.0
-                }
-            }
-        } catch {
-            print("Error loading shapes: \(error)")
-            // If file doesn't exist, just clear shapes for this state
-             await MainActor.run {
-                self.selectedStateBinding.wrappedValue.savedShapes = []
+        let shapes = await MapShapeManager.loadShapes(for: selectedID)
+        await MainActor.run {
+            self.selectedStateBinding.wrappedValue.savedShapes = shapes
+            for shape in shapes {
+                self.shapeAnimations[shape.id] = 1.0
             }
         }
     }
@@ -203,24 +176,17 @@ extension MapView {
         do {
             let data = try JSONEncoder().encode(selectedState.savedShapes)
             try data.write(to: shapesFileURL)
-            print("Saved to: \(shapesFileURL)")
         } catch {
             print("Error saving shapes: \(error)")
         }
     }
     
     private var shapesFileURL: URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("saved_map_shapes_\(selectedID).json")
+        MapShapeManager.shapesFileURL(for: selectedID)
     }
     
     var currentMapStyle: MapStyle {
-        switch mapStyleSelection {
-        case 0: return .standard(elevation: .realistic)
-        case 1: return .hybrid(elevation: .realistic)
-            //        case 2: return .imagery(elevation: .realistic)
-        default: return .standard
-        }
+        MapShapeManager.mapStyle(for: mapStyleSelection)
     }
 }
 
