@@ -15,9 +15,8 @@ struct SwipeCalendarView: View {
 
     var body: some View {
         ZStack {
-            LiquidBackground()
-                .ignoresSafeArea()
-                .overlay(.ultraThinMaterial.opacity(0.1))
+           CommonBackground()
+               .ignoresSafeArea()
 
             // 2. Main Content
             VStack {
@@ -76,12 +75,8 @@ struct SwipeCalendarView: View {
                         feedback.impactOccurred()
                     }
                 }
-
-                DatePickerView(
-                    calendarState: $calendarState,
-                    activeMode: $activeMode,
-                    setActive: setActive
-                )
+                
+                WeekView()
 
                 // Instructional Footer
                 Text("Tap a card to select • Swipe horizontally to adjust")

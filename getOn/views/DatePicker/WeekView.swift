@@ -104,7 +104,7 @@ struct WeekView: View {
                     )
             }
         }
-        .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 10)
     }
 
     // MARK: - Header
@@ -225,15 +225,8 @@ struct WeekView: View {
         let x = xPosition(for: slot.startHalfHour, in: stripWidth)
         let w = xPosition(for: slot.endHalfHour, in: stripWidth) - x
 
-        return Capsule()
-            .fill(
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.7)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .shadow(color: .blue.opacity(0.3), radius: 4, x: 0, y: 2)
+        return RoundedRectangle(cornerRadius: 4)
+            .fill(.blue)
             .frame(width: max(w, 4), height: 28)
             .position(x: x + w / 2, y: rowHeight / 2)
             .opacity(isPreview ? 0.55 : 1.0)
@@ -366,7 +359,7 @@ struct WeekView: View {
 
 #Preview("WeekView / Edit") {
     ZStack {
-        LiquidBackground()
+        CommonBackground()
             .ignoresSafeArea()
         WeekView()
             .padding()
