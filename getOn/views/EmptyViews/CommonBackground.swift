@@ -11,7 +11,7 @@ struct CommonBackground: View {
     @State private var animate = false
     
     var body: some View {
-        Color.blue.opacity(0.8)
+        Color.cyan.opacity(0.8)
     }
 }
 
@@ -19,4 +19,5 @@ struct CommonBackground: View {
     @Previewable @State var calendarState: CalendarViewState = .init()
     
     SwipeCalendarView(calendarState: .constant(calendarState))
-        .environmentObject(AuthenticationManager())}
+        .environmentObject(AuthenticationManager())
+}

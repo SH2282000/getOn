@@ -26,6 +26,13 @@ struct WeekView: View {
     @State private var dragDayIndex: Int? = nil
     @State private var lastSnappedHalfHour: Int? = nil
 
+    // Zoom state (shared across all strips)
+    @State private var zoomScale: CGFloat = 1.0
+    @State private var scrollOffset: CGFloat = 0.0
+
+    // Week-swipe state
+    @State private var weekSwipeOffset: CGFloat = 0.0
+
     private let feedback = UIImpactFeedbackGenerator(style: .light)
     private let mediumFeedback = UIImpactFeedbackGenerator(style: .medium)
     private let selectionFeedback = UISelectionFeedbackGenerator()
@@ -88,6 +95,7 @@ struct WeekView: View {
                 .padding(.vertical, 10)
         }
         .padding(.vertical, 4)
+        .offset(y: weekSwipeOffset)
         .background {
             ZStack {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -105,6 +113,33 @@ struct WeekView: View {
             }
         }
         .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 10)
+        .gesture(weekSwipeGesture)
+    }
+
+    // MARK: - Week Swipe Gesture
+
+    private var weekSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onChanged { value in
+                // Only respond to mostly-vertical drags
+                let ratio = abs(value.translation.height) / max(abs(value.translation.width), 1)
+                if ratio > 0.8 {
+                    weekSwipeOffset = value.translation.height * 0.3 // rubber-band feel
+                }
+            }
+            .onEnded { value in
+                let threshold: CGFloat = 40
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                    if value.translation.height > threshold {
+                        weekOffset -= 1
+                        feedback.impactOccurred()
+                    } else if value.translation.height < -threshold {
+                        weekOffset += 1
+                        feedback.impactOccurred()
+                    }
+                    weekSwipeOffset = 0
+                }
+            }
     }
 
     // MARK: - Header
@@ -116,34 +151,6 @@ struct WeekView: View {
                 .foregroundStyle(.white)
 
             Spacer()
-
-            HStack(spacing: 12) {
-                Button {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                        weekOffset -= 1
-                    }
-                    feedback.impactOccurred()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-
-                Text("Scroll weeks")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.4))
-
-                Button {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                        weekOffset += 1
-                    }
-                    feedback.impactOccurred()
-                } label: {
-                    Image(systemName: "chevron.right")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-            }
         }
     }
 
@@ -153,18 +160,24 @@ struct WeekView: View {
         HStack(spacing: 0) {
             Color.clear.frame(width: dayLabelWidth)
 
-            GeometryReader { geo in
-                let stripWidth = geo.size.width
-                ForEach(hourLabels, id: \.self) { hour in
-                    let x = xPosition(for: hour * 2, in: stripWidth)
-                    Text(String(format: "%02d", hour))
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.4))
-                        .position(x: x, y: 10)
+            ZoomableTimelineStrip(
+                zoomScale: $zoomScale,
+                scrollOffset: $scrollOffset,
+                rowHeight: 20
+            ) { viewportWidth, xPos in
+                ZStack {
+                    ForEach(hourLabels, id: \.self) { hour in
+                        let x = xPos(hour * 2)
+                        if x > -30 && x < viewportWidth + 30 {
+                            Text(String(format: "%02d", hour))
+                                .font(.system(size: 10, weight: .medium, design: .rounded))
+                                .foregroundStyle(.white.opacity(0.4))
+                                .position(x: x, y: 10)
+                        }
+                    }
                 }
             }
         }
-        .frame(height: 20)
     }
 
     // MARK: - Day Row
@@ -178,27 +191,32 @@ struct WeekView: View {
                 .foregroundStyle(.white.opacity(0.7))
                 .frame(width: dayLabelWidth, alignment: .leading)
 
-            // Time strip
-            GeometryReader { geo in
-                let stripWidth = geo.size.width
+            // Time strip with zoom support
+            ZoomableTimelineStrip(
+                zoomScale: $zoomScale,
+                scrollOffset: $scrollOffset,
+                rowHeight: rowHeight
+            ) { viewportWidth, xPos in
                 ZStack(alignment: .leading) {
                     // Grid lines
                     ForEach(hourLabels + [24], id: \.self) { hour in
-                        let x = xPosition(for: hour * 2, in: stripWidth)
-                        Rectangle()
-                            .fill(.white.opacity(0.08))
-                            .frame(width: 0.5)
-                            .position(x: x, y: rowHeight / 2)
+                        let x = xPos(hour * 2)
+                        if x > -1 && x < viewportWidth + 1 {
+                            Rectangle()
+                                .fill(.white.opacity(0.08))
+                                .frame(width: 0.5)
+                                .position(x: x, y: rowHeight / 2)
+                        }
                     }
 
                     // Committed time slots
                     ForEach(timeSlots.filter { $0.dayIndex == dayIndex }) { slot in
-                        timeBlockCapsule(slot: slot, stripWidth: stripWidth, isPreview: false)
+                        timeBlockCapsule(slot: slot, viewportWidth: viewportWidth, xPos: xPos, isPreview: false)
                     }
 
                     // Live drag preview
                     if let preview = currentDragSlot, preview.dayIndex == dayIndex {
-                        timeBlockCapsule(slot: preview, stripWidth: stripWidth, isPreview: true)
+                        timeBlockCapsule(slot: preview, viewportWidth: viewportWidth, xPos: xPos, isPreview: true)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -207,7 +225,7 @@ struct WeekView: View {
                 .gesture(
                     DragGesture(minimumDistance: 5, coordinateSpace: .named("strip\(dayIndex)"))
                         .onChanged { value in
-                            handleDragChanged(value: value, dayIndex: dayIndex, stripWidth: stripWidth)
+                            handleDragChanged(value: value, dayIndex: dayIndex, viewportWidth: viewportWidth)
                         }
                         .onEnded { _ in
                             handleDragEnded()
@@ -215,20 +233,20 @@ struct WeekView: View {
                 )
             }
         }
-        .frame(height: rowHeight)
         .padding(.horizontal, 12)
     }
 
     // MARK: - Time Block Capsule
 
-    private func timeBlockCapsule(slot: TimeSlot, stripWidth: CGFloat, isPreview: Bool) -> some View {
-        let x = xPosition(for: slot.startHalfHour, in: stripWidth)
-        let w = xPosition(for: slot.endHalfHour, in: stripWidth) - x
+    private func timeBlockCapsule(slot: TimeSlot, viewportWidth: CGFloat, xPos: (Int) -> CGFloat, isPreview: Bool) -> some View {
+        let x1 = xPos(slot.startHalfHour)
+        let x2 = xPos(slot.endHalfHour)
+        let w = x2 - x1
 
         return RoundedRectangle(cornerRadius: 4)
             .fill(.blue)
             .frame(width: max(w, 4), height: 28)
-            .position(x: x + w / 2, y: rowHeight / 2)
+            .position(x: x1 + w / 2, y: rowHeight / 2)
             .opacity(isPreview ? 0.55 : 1.0)
     }
 
@@ -273,22 +291,10 @@ struct WeekView: View {
         }
     }
 
-    // MARK: - Coordinate Math
-
-    private func halfHourIndex(x: CGFloat, stripWidth: CGFloat) -> Int {
-        let clamped = max(0, min(x, stripWidth))
-        let raw = Int((clamped / stripWidth) * 48.0)
-        return min(raw, 47)
-    }
-
-    private func xPosition(for halfHour: Int, in stripWidth: CGFloat) -> CGFloat {
-        CGFloat(halfHour) / 48.0 * stripWidth
-    }
-
     // MARK: - Gesture Handlers
 
-    private func handleDragChanged(value: DragGesture.Value, dayIndex: Int, stripWidth: CGFloat) {
-        let hh = halfHourIndex(x: value.location.x, stripWidth: stripWidth)
+    private func handleDragChanged(value: DragGesture.Value, dayIndex: Int, viewportWidth: CGFloat) {
+        let hh = halfHourFromX(value.location.x, scrollOffset: scrollOffset, zoomScale: zoomScale, viewportWidth: viewportWidth)
 
         switch dragMode {
         case .add:
@@ -310,7 +316,6 @@ struct WeekView: View {
             }
 
         case .remove:
-            // Find and remove any slot under the finger
             if let idx = timeSlots.firstIndex(where: {
                 $0.dayIndex == dayIndex && $0.startHalfHour <= hh && hh < $0.endHalfHour
             }) {
